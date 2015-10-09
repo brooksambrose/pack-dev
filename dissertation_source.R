@@ -7,10 +7,11 @@ wok2dbl.f<-function(
 	,save=T
 	,verbose=T
 	,check.for.saved.output=F
-){
-	if(check.for.saved.output) if(any(grepl('wok2dbl.RData',dir(recursive=T,full.names=T,ignore.case=T)))) {
+)
+{
+	if(check.for.saved.output) if(any(grepl('wok2dbl.RData',dir(path=out,recursive=T,full.names=T,ignore.case=T)))) {
 		warning('Loading and returning saved wok2dbl.RData.',call. = F)
-		load(dir(pattern='wok2dbl.RData',recursive=T,full.names=T,ignore.case=F)[1])
+		load(dir(path=out,pattern='wok2dbl.RData',recursive=T,full.names=T,ignore.case=F)[1])
 		return(wok2dbl)
 	}
 
@@ -90,7 +91,8 @@ jstor2dbw.f<-function(
 	,drop.nchar1=T # drop ngrams of 1 character
 	,drop.freq1=T # drop ngrams that appear only once
 	,check.for.saved.output=F # will scan output directory for a 'jstor2dbw.RData' file, load it, and return it instead of running a new import
-){
+)
+{
 	if(check.for.saved.output) if(any(grepl('jstor2dbw.RData',dir(recursive=T,full.names=T,ignore.case=T)))) {
 		warning('Loading and returning saved jstor2dbw.RData.',call.=F)
 		load(dir(pattern='jstor2dbw.RData',full.names=T,recursive=T,ignore.case=F)[1])
@@ -163,6 +165,7 @@ jstor2dbw[,bow:=list(lapply(bow,function(x) {x<-matrix(c(which(vocab%in%names(x)
 dbl2bel.f<-function(
 	wok2dbl
 	,out=stop("Specify output directory for your project.")
+	,check.for.saved.output=F
 	,saved_recode=NULL
 	,save_og4recode=F
 	,trim_doi=T
@@ -171,8 +174,13 @@ dbl2bel.f<-function(
 	,cut_samp_def=0 # if sample is based on a common citation set that should be removed for analysis
 	,trim_pendants=T
 	,trim_loops=T
-){
-
+)
+{
+	if(check.for.saved.output) if(any(grepl('dbl2bel.RData',dir(path=out,recursive=T,full.names=T,ignore.case=T)))) {
+		warning('Loading and returning saved dbl2bel.RData.',call. = F)
+		load(dir(path=out,pattern='dbl2bel.RData',recursive=T,full.names=T,ignore.case=F)[1])
+		return(dbl2bel)
+	}
 ### check function requirements ###
 require(data.table)
 out
@@ -191,12 +199,14 @@ if(trim_anon&capitalize) dbl2bel[,cr:=sub("^\\[ANONYMOUS\\], ","",cr)] #remove A
 
 ### recoding ###
 setkey(dbl2bel,cr)
-if(save_og4recode){ # save original codes to disk
+if(save_og4recode) {
+	# save original codes to disk
 	cat('\nSaving normalized original CR codes to pass to fuzzy set routine.')
 	original.cr<-unique(dob2bel$cr)
 	save(original.cr,file=paste(out,.Platform$file.sep,'original-cr.RData',sep=""))
 }
-if(!is.null(saved_recode)){ # recode using fuzzy sets
+if(!is.null(saved_recode)) {
+	# recode using fuzzy sets
 	lfs<-length(saved_recode)
 	cat('\nRecoding CR from',lfs,'sets.\n')
 	dbl2bel[,zcr:=cr]
@@ -211,7 +221,7 @@ if(!is.null(saved_recode)){ # recode using fuzzy sets
 	cat('\n')
 }
 ### pendants ###
-if(trim_pendants){
+if(trim_pendants) {
 dbl2bel[,pend:=!(duplicated(cr)|duplicated(cr,fromLast=T))]
 if(!is.null(saved_recode)) dbl2bel[,zpend:=!(duplicated(zcr)|duplicated(zcr,fromLast=T))]
 }
@@ -288,26 +298,25 @@ res<-data.frame(case=c('Total acts of reference'
 	,nrow(crd[!list(1)])
  )
 )
-if(!is.null(saved_recode)){
+if(!is.null(saved_recode)) {
 res$zcr<-c(zcrd[,sum(N)]
 	,nrow(zcrd)
 	,nrow(zcrd[list(1)])
 	,dbl2bel[,sum(zloop&!zpend)]
 	,zcrd[!list(1),sum(N)]
-	,nrow(zcrd[!list(1)])
-)
+	,nrow(zcrd[!list(1)]))
 res$change<-res$zcr-res$cr
 res$perc.change<-round(res$zcr/res$cr*100,5)
 res$alt.change<-res$perc.change-100
 }
 print(res)
 cat('\n')
-mres<-data.frame(case=
-	c('Pendants as % of total references'
+mres<-data.frame(case=c(
+	'Pendants as % of total references'
 	 ,'Pendants as % of unique citations')
 	,cr=round(c(res$cr[3]/res$cr[1],res$cr[3]/res$cr[2])*100,4)
-
 )
+
 if(!is.null(saved_recode)) mres$zcr<-round(c(res$zcr[3]/res$zcr[1],res$zcr[3]/res$zcr[2])*100,4)
 print(mres)
 attributes(dbl2bel)$results<-list(res,mres)
@@ -320,8 +329,15 @@ bel2mel.f<-function(
 	,subset=NULL # a vector of UT
 	,type=c("utel","crel")
 	,out=stop("Specify output directory for your project.")
+	,check.for.saved.output=F
 	,write2disk=F
-){
+)
+{
+	if(check.for.saved.output) if(any(grepl('bel2mel.RData',dir(path=out,recursive=T,full.names=T,ignore.case=T)))) {
+		warning('Loading and returning saved bel2mel.RData.',call. = F)
+		load(dir(path=out,pattern='bel2mel.RData',recursive=T,full.names=T,ignore.case=F)[1])
+		return(bel2mel)
+	}
 	out
 	require(data.table)
 	if(ncol(dbl2bel)>2) stop('dbl2bel must be a bimodal edgelist as a two column data.table with UT in first column and CR in second. Selection on pendants, use of fuzzy replacement, etc. should be made prior to passing to bel2mel.f.')
@@ -395,10 +411,216 @@ if(write2disk){
 	bel2mel
 }
 
+mel2comps.f<-function(
+	bel2mel
+	,type=c('crel','utel')
+	,out=stop('Specify output directory')
+	,min.size=3
+)
+{
+	require(data.table)
+	require(igraph)
+	out
+	ret<-list()
+	for(i in type) if(i%in%names(bel2mel)) {
+		cat('\n',i,'\n',sep='')
+		levs<-factor(bel2mel[[i]][,do.call(c,.SD),.SDcols=1:2])
+		bel2mel[[i]]<-matrix(as.character(as.integer(levs)),ncol=2)
+		levs<-levels(levs)
+		g<-graph.edgelist(bel2mel[[i]],FALSE)
+		g<-decompose.graph(g)
+		comp.sizes<-sapply(g,vcount)
+		print(table(comp.sizes))
+		cat('Only networks of size',min.size,'and above returned.')
+		cat('\nDirectories created:')
+		mapply(
+			function(net,id,vcount) {
+				path<-paste(out,'mel2comps',i,paste(id,vcount,sep='-'),sep=.Platform$file.sep)
+				dir.create(path,recursive=T)
+				cat('\n',path)
+				write.table(get.edgelist(net),file=paste(path,'mel2comps.txt',sep=.Platform$file.sep),sep='\t',quote=F,na='',row.names=F,col.names=F)
+				}
+			,net=g[comp.sizes>=min.size]
+			,id=(1:length(g))[comp.sizes>=min.size]
+			,vcount=comp.sizes[comp.sizes>=min.size]
+			)
+		writeLines(levs,con=paste(out,'mel2comps',i,'mel2comps-levs.txt',sep=.Platform$file.sep))
+		ret[[i]]<-g[comp.sizes>=min.size]
+		}
+	ret
+}
+
+comps2cos.f<-function(
+	mel2comps.dir=stop('Specify directory where mel2comps.txt edgelists are located.')
+	,cosparallel.path=stop('Specify path to cosparallel executable (e.g. ~/cosparallel-code/cos)')
+	,threads=1
+)
+{
+	mel2comps.dir
+	cosparallel.path
+
+	mel2comps<-list.files(mel2comps.dir,pattern='mel2comps\\.txt$',recursive=T,full.names=T)
+
+	for(i in mel2comps){
+		com<-paste(
+				'cd \'',sub('mel2comps.txt','\'',i)
+				,' && ',sub('cos$','extras/maximal_cliques',cosparallel.path),' \'',i,'\''
+				,' && ',cosparallel.path,' -P ',threads,' \'',i,'.mcliques\''
+				,sep='')
+		cat('Source data: ',i,'\n\nThreads used: ',threads,'\n\nsh: ',com,'\n\ncos stdout:\n\n',sep='')
+		system(
+			command=com
+			#		,stdout='stdout.txt'
+			)
+		}
+}
+
+cos2kcliqdb.f<-function(
+	mel2comps.dir=stop('Specify a mel2comps directory that includes cos output.')
+	,out=stop('Specify output directory.')
+	,type=c('crel','utel')
+)
+{
+	require(data.table)
+	mel2comps.dir
+	for(i in type) if(i%in%dir(mel2comps.dir)) {
+		p<-paste(mel2comps.dir,i,sep=.Platform$file.sep)
+		d<-list.dirs(p)[-1]
+		olevs<-readLines(list.files(p,pattern='levs',full.names=T))
+		ret<-list()
+		ret[[i]]$orig<-lapply(d,function(j) {
+			f<-list.files(j,pattern='[0-9]_communities\\.txt$',full.names=T)
+			if(length(f)) {
+				coslevs<-read.table(list.files(j,full.names=T,pattern='map$'))$V1
+				k<-as.integer(sub('^.+/([0-9]+)_.+$','\\1',f))
+				f<-f[order(k)]
+				k<-k[order(k)]
+				cos<-lapply(f,function(x) {
+					x<-readLines(x)
+					x<-sapply(x,function(y) lapply(strsplit(y,split='[: ]'),as.integer))
+					x<-data.table(id=sapply(x,function(y) y[1]),memb=lapply(x,function(y) y[-1]))
+					x<-x[,list(memb=list(memb)),by=id]
+					x<-lapply(x$memb,function(y) sort(unique(unlist(y))))
+					x
+					})
+				dup<-duplicated(cos,fromLast=T)
+				cos<-cos[!dup]
+				k<-k[!dup]
+				f<-f[!dup]
+				names(cos)<-paste('k',k,'c',sub('^.+/([0-9]+)-[0-9]+/.+','\\1',f),'-',sep='')
+				cos<-do.call(c,cos)
+				names(cos)<-sub('-$','',names(cos))
+				cos<-lapply(cos,function(x) sort(coslevs[x+1]))
+				return(cos)
+				}
+			})
+		ret[[i]]$orig<-do.call(c,ret[[i]]$orig)
+		ret[[i]]$orig<-split(ret[[i]]$orig,f=sub('^k([0-9]+).+$','\\1',names(ret[[i]]$orig)))
+		ret[[i]]$orig<-ret[[i]]$orig[order(as.integer(names(ret[[i]]$orig)))]
+		names(ret[[i]]$orig)<-paste('k',names(ret[[i]]$orig),sep='')
+		cat('\n',i,'k-clique community distribution (original)\n')
+		print(sapply(ret[[i]]$orig,length))
+
+		### strict membership interpretation
+		x<-lapply(ret[[i]]$orig,function(x) sort(unique(unlist(x))))
+		x<-rev(lapply(length(x):1, function(y) sort(unique(unlist(x[length(x):y])))))
+		for(j in 1:(length(x)-1)) x[[j]] <- setdiff(x[[j]],x[[j+1]])
+		ret[[i]]$strict<-mapply(function(com,reg) lapply(com,function(y) intersect(y,reg)),com=ret[[i]]$orig,reg=x) # com=communities reg=register
+		ret[[i]]$strict<-lapply(ret[[i]]$strict,function(x) x[!!sapply(x,length)])
+		ret[[i]]$strict<-ret[[i]]$strict[!!sapply(ret[[i]]$strict,length)]
+		names(ret[[i]]$strict)<-paste(names(ret[[i]]$strict),'-',sep='')
+		ret[[i]]$strict<-do.call(c,ret[[i]]$strict)
+		names(ret[[i]]$strict)<-sub('^.+\\.','',sub('-$','',names(ret[[i]]$strict)))
+
+		cat('\n',i,'k-clique community distribution (strict)\n')
+		t<-table(as.integer(sub('^k([0-9]+).+$','\\1',names(ret[[i]]$strict))))
+		names(t)<-paste('k',names(t),sep='')
+		print(t)
+
+		attributes(ret[[i]])$levels<-olevs
+		}
+	save(ret,file=paste(out,'cos2kcliqdb.RData',sep=.Platform$file.sep))
+	ret
+}
+
+kcliqdb2viz.f<-function(
+	cos2kcliqdb
+	,mel2comps.dir=stop('Specify a mel2comps directory that includes cos output.')
+	,out=stop('Specify output directory.')
+	,type=c('crel','utel')
+)
+{
+	require(igraph)
+	mel2comps.dir
+	ret<-list()
+	for(i in type) if(i%in%dir(mel2comps.dir)){
+		p<-paste(mel2comps.dir,i,sep=.Platform$file.sep)
+		olevs<-readLines(list.files(p,pattern='levs',full.names=T))
+		els<-list.files(p,recursive=T,full.names=T,pattern='mel2comps.txt$')
+		els<-as.matrix(do.call(rbind,lapply(els,function(x) read.delim(x,header=F,quote='',fill=F,colClasses='character'))))
+		ret[[i]]$g<-graph.edgelist(els,F)
+		key<-data.table(gph=1:vcount(ret[[i]]$g),src=as.integer(V(ret[[i]]$g)$name))
+		setkey(key,src)
+
+		# plot strict interpretation with terrain colors
+		cos2kcliqdb[[i]]$strict<-lapply(cos2kcliqdb[[i]]$strict,function(x) key[list(x),gph])
+		pdf(paste(out,paste('kcliqdb2vis',i,'strict.pdf',sep='-'),sep=.Platform$file.sep))
+		cols<-as.integer(sub('^k([0-9]+).*$','\\1',names(cos2kcliqdb[[i]]$strict)))-2
+		mark.col<-terrain.colors(max(cols))[cols]
+		mark.border<-'white'
+		plot(
+			ret[[i]]$g
+			# 			,mark.groups=tail(cos2kcliqdb[[i]]$strict,1)
+			# 			,mark.expand=5
+			#			,mark.col=mark.col
+			#			,mark.border=mark.border
+			,vertex.size=0
+			,vertex.shape='square'
+			,vertex.label=NA
+			,vertex.color=gray(0,.1)
+			,vertex.frame.color=NA
+			#			,vertex.label.cex=0
+			,edge.color=gray(0,.1)
+			#,vertex.color=c('white','gray')[(1:length(V(gut4_1g))%in%unique(unlist(hulls1[samp1])))+1]
+			,main="Strict"
+			,layout=ret[[i]]$lout
+			)
+		dev.off()
+		t1<-proc.time()
+		t1-t0
+
+		## Plot kcoms as nodes in hierarchical tree
+
+		trg<-list()
+		for(j in length(cos2kcliqdb[[i]]$orig):2) trg[[j]]<-graph.incidence(sapply(cos2kcliqdb[[i]]$orig[[j]],function(x) sapply(cos2kcliqdb[[i]]$orig[[j-1]],function(y) sum(x%in%y))),mode='in',weighted=T,directed=T)
+		trg<-do.call(graph.union,trg)
+		V(trg)$k<-as.integer(sub('^k([0-9]+).+$','\\1',V(trg)$name))
+		V(trg)$layer<-max(V(trg)$k)-V(trg)$k+1
+		tc<-as.integer((log(V(trg)$k-2)+.1)*10)
+		V(trg)$terrain<-terrain.colors(round(max(tc)+.1*max(tc)),alpha=1)[tc]
+		trg$layout<-layout.sugiyama(trg,hgap=15,layers=V(trg)$layer,maxiter=10000)$layout
+
+		pdf(paste(out,paste('kcliqdb2vis',i,'sugiyama.pdf',sep='-'),sep=.Platform$file.sep))
+		plot(trg
+				 ,layout=trg$layout
+				 ,vertex.label=NA
+				 ,vertex.size=4
+				 ,vertex.shape='square'
+				 ,vertex.frame.color=NA # 'white'  #gray(0,.05)
+				 ,vertex.color=V(trg)$terrain
+				 ,edge.arrow.mode='-'
+				 ,edge.width=.1
+				 ,edge.color=gray(.1,1)
+				 )
+		dev.off()
+		}
+}
+
 mel2cfinder.f<-function(
 	bel2mel
 	,out=stop("Specify output directory for your project.")
-){
+)
+{
 	library(data.table)
 	if('crel'%in%names(bel2mel)) {
 		bel2mel$crel[,ut:=NULL]
@@ -429,13 +651,14 @@ mel2cfinder.f<-function(
 cfinder2all.f<-function(
 	cf.in=stop('cf.out.dir = Path to CFinder output.')
 	,which=c('communities_links'
-					 ,'communities'
-					 ,'communities_cliques'
-					 ,'degree_distribution'
-					 ,'graph_of_communities'
-					 ,'membership_distribution'
-					 ,'overlap_distribution'
-					 ,'size_distribution')
+	 ,'communities'
+	 ,'communities_cliques'
+	 ,'degree_distribution'
+	 ,'graph_of_communities'
+	 ,'membership_distribution'
+	 ,'overlap_distribution'
+	 ,'size_distribution'
+	 )
 )
 {
 	require(data.table)
@@ -1332,7 +1555,6 @@ w2tab.f<-function(
         out <- head(out, n)
     out
 }
-# shorthand
 lsos <- function(
 	...
 	, n=10
@@ -1518,7 +1740,6 @@ strdist.dend.picker<-function(
 	sets
 }
 
-
 write.ergmm<-function(
 	where=stop("\"where\" = folder filepath for scripts",call.=F)
 	,dat=stop("\"dat\" = name of .RData file containing (stat)nets, w. ext",call.=F)
@@ -1552,7 +1773,8 @@ write.ergmm<-function(
 cull.f<-function(
 	a
 	,b,cull=.2
-	,noanon=F)
+	,noanon=F
+)
 {
 	if(any(is.na(b))) {b<-na.omit(b);attributes(b)<-NULL}
 	if(noanon) {
@@ -1679,7 +1901,6 @@ extract.components<-function(
 	print(table(components$csize))
 	return(subgraphs)
 }
-
 
 igraph2statnet<-function(
 	net
