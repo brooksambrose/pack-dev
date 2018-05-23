@@ -1,9 +1,3 @@
-
-
-
-
-
-
 #' Negative community detection, or finding groups of people who've worked together the least.
 #'
 #' @param el a two column data.frame where first column is sender and second reciever
@@ -129,4 +123,3 @@ dif.groups<-function(
 	}
 	ret
 }
-
