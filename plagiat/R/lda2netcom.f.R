@@ -87,3 +87,4 @@ lda2netcom.f<-function(stmbow2lda,out.dir,freq.weight,reps=10,mx.grp=30){
 
 	com<-list(mem=membership(sgb),c=sgb,g=g,mod=md,r=rk,p=tp)
 }
+
