@@ -1,0 +1,7 @@
+library(devtools)
+library(roxygen2)
+library(magrittr)
+suppressPackageStartupMessages(library(data.table))
+library(plagiat)
+library(tilit)
+dev_mode()
