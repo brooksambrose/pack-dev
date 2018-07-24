@@ -1,2 +1,7 @@
+library(devtools)
+dev_mode()
+library(roxygen2)
 library(magrittr)
 suppressPackageStartupMessages(library(data.table))
+try(library(plagiat),s=T)
+try(library(tilit),s=T)
