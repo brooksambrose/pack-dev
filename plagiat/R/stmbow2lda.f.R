@@ -29,7 +29,6 @@ stmbow2lda.f<-function(
 	require(stm,quietly = T)
 	require(data.table)
 
-	browser()
 	stmbow2lda<-list()
 	stmbow2lda$model
 	stmbow2lda<-selectModel(
