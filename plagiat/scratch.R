@@ -61,11 +61,17 @@ imp2ftx.f<-function(imp){
   require(magrittr)
   require(stringr)
 
+  if(!is.data.table(imp)) imp<-imp$imp
+  p<-'pag'%in%names(imp)
   ftx<-imp[,.(txt=str_split(txt,boundary('sentence')) %>% unlist),by = setdiff(names(imp), 'txt')]
-  ftx[,sen:=1:.N,by=doc]
+  if(p) {
+    ftx[,sen:=c(T,grepl('[.?!]["\' )]*$',txt[-.N])) %>% cumsum,by=doc]
+  } else {
+    ftx[,sen:=1:.N,by=doc]
+  }
   ftx<-ftx[,.(txt=str_split(txt,boundary('word',skip_word_none = F)) %>% unlist),by = setdiff(names(ftx), 'txt')]
   ftx[,cha:=cumsum(nchar(txt))-nchar(txt)+1,by=.(doc,lin)]
-  o<-c('doc','lin','cha','sen','txt')
+  o<-intersect(c('doc','lin','cha','pag','par','sen','txt'),names(ftx))
   setcolorder(ftx,c(o,setdiff(names(ftx),o)))
   ftx<-ftx[txt!=' ']
   ftx
@@ -80,7 +86,13 @@ imp2ftx.f<-function(imp){
 #'
 #' @examples
 ftxbro<-function(ftx){
-  x<-do.call(scan,ftx[1,.(what="character",file=doc,nmax=1,skip=lin-1,sep='\n')])
+  if(nrow(ftx)>1) stop('Pass one location at a time.')
+  if('pag'%in%names(ftx)) {
+    getOption('viewer')(ftx[,paste0(doc,'#page=',pag+1)])
+    x<-ftx[,pdftools::pdf_text(doc)[lin]]
+  } else {
+    x<-do.call(scan,ftx[1,.(what="character",file=doc,nmax=1,skip=lin-1,sep='\n')])
+  }
   x<-c(
     stringr::str_sub(x,end=ftx[1,cha-1])
     ,stringr::str_sub(x,start=ftx[1,cha])
@@ -418,7 +430,7 @@ c
 
 u<-paste0('https://www.jstor.org/action/showJournals?contentType=journals&letter=',c('0-9',LETTERS))
 
-imp<-function(pageurl,xp='//*[@id="content"]/div[1]/div/div[4]/div/table'){
+master2jstorm.f<-function(pageurl,xp='//*[@id="content"]/div[1]/div/div[4]/div/table'){
   cat(pageurl,'\n',sep='')
   dt<-read_html(pageurl)
   t<-dt %>% html_nodes(xpath=xp) %>% html_table %>% `[[`(1) %>% data.table
@@ -432,7 +444,7 @@ if(file.exists('jstorm.RData')){
 } else {
   jstorm<-list()
   for(i in u[which(u%in%i):length(u)]){
-    jstorm[[i]]<-try(imp(i))
+    jstorm[[i]]<-try(master2jstorm.f(i))
     Sys.sleep(rnorm(1) %>% abs %>% `+`(.5))
   }
   jstorm<-jstorm[!sapply(jstorm,inherits,'try-error')] %>% rbindlist
@@ -504,7 +516,7 @@ jpdf2imp<-function(jpdf,ocr=F,depth=5){
     }
   }
   # metadata key
-  meta<-data.table(
+  met<-data.table(
     title=sapply(cp,function(x) {
       b<-grep('^Author',x)
       if(!length(b)) b<-grep('^Source',x)
@@ -532,12 +544,12 @@ jpdf2imp<-function(jpdf,ocr=F,depth=5){
       x[b] %>% sub('^[^:]+: ','',.) %>% sub('^ *','',.) %>% sub(' *$','',.)
     })
   )
-  meta[,doc:=jpdf]
-  meta[,`:=`(
+  met[,doc:=jpdf]
+  met[,`:=`(
     journal=sapply(source,`[`,1)
     ,year=sapply(source,function(x) grep('^[0-9]{4}$',x,value = T) %>% tail(1))
   )]
-  setcolorder(meta,c('doc','journal','year','title','author','source','url','accessed'))
+  setcolorder(met,c('doc','journal','year','title','author','source','url','accessed'))
   # header detection, accurate solution is too slow
   cat('\nHeader detection\n')
   clusth<-function(y) {
@@ -574,26 +586,32 @@ jpdf2imp<-function(jpdf,ocr=F,depth=5){
   imp<-lapply(imp,function(x) {
     data.table(
       pag=1:length(x) %>% rep(sapply(x,length))
+      ,lin=sapply(x,length) %>% sapply(seq) %>% unlist
       ,txt=x %>% unlist
     )})
   pb <- progress_bar$new(format = "  [:bar] :elapsed :eta",total = length(imp), clear = FALSE, width= 60)
+  cn<-c('doc','pag','lin','par','txt')
   pb$tick(0)
   for(i in 1:length(imp)) {
     imp[[i]][,es:=grepl('[.!?\'\",]$',txt)]
     imp[[i]][,bp:=grepl(' {3,6}',txt)]
     imp[[i]][,par:=c(T,es[-.N]&bp[-1]) %>% cumsum]
-    imp[[i]]<-imp[[i]][,.(pag=range(pag) %>% unique %>% paste(collapse='-'),txt=txt %>% paste0(collapse=' ') %>% gsub('- ','',.) %>% gsub(' +',' ',.)),by=par]
     imp[[i]][,doc:=jpdf[i]]
-    setcolorder(imp[[i]],c('doc','pag','par','txt'))
+    imp[[i]][,setdiff(names(imp[[i]]),cn):=NULL]
+    setcolorder(imp[[i]],cn)
     pb$tick()
   }
   imp<-rbindlist(imp) %>% setkey(doc)
-  setkey(meta,doc)
-  list(imp=imp,meta=meta)
+  setkey(met,doc)
+  list(imp=imp,met=met)
 }
 
 jpdf<-jpdf2imp(dir('1895',full.names = T
                    #,pattern = '(Hirsch)|(Jenks)'
 ))
-save(jpdf,file='fpdf.RData')
+save(jpdf,file='jpdf.RData')
 #    getOption('viewer')(jpdf %>% paste0('#page=3'))
+load('jpdf.RData')
+ftx<-imp2ftx.f(jpdf)
+ftx[1001] %>% ftxbro
+
