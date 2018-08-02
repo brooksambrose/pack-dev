@@ -16,7 +16,7 @@ kcliqdb2viz.f<-function(
 	,type=c('crel','utel')
 )
 {
-	require(igraph)
+  library(igraph)
 	mel2comps.dir
 	ret<-list()
 	for(i in type) if(i%in%dir(mel2comps.dir)){

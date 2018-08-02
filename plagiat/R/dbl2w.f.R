@@ -18,7 +18,7 @@ dbl2w.f<-function(
 	,recode=NULL
 )
 {
-	require(data.table)
+  library(data.table)
 	wok2dbl<-data.table(wok2dbl)
 	setnames(wok2dbl,c("ut","field","b"))
 	setkey(wok2dbl,field)

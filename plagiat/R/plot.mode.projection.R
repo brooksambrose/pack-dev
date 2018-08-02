@@ -28,7 +28,7 @@ plot.mode.projection <- function(
   ,layout=list()
 )
 {
-  require(network)
+  library(network)
 
   el<-data.frame(s=as.character(el[,1]),r=as.character(el[,2]),stringsAsFactors=F)
   el<-el[order(el$s,el$r),]

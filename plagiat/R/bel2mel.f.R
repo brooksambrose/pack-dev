@@ -28,7 +28,7 @@ bel2mel.f<-function(
 		return(bel2mel)
 	}
 	out
-	require(data.table)
+	library(data.table)
 	if(ncol(dbl2bel)>2) stop('dbl2bel must be a bimodal edgelist as a two column data.table with UT in first column and CR in second. Selection on pendants, use of fuzzy replacement, etc. should be made prior to passing to bel2mel.f.')
 
 	setnames(dbl2bel,c('ut','cr'))

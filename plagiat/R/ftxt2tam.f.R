@@ -8,9 +8,9 @@
 #'
 #' @examples
 ftxt2tam.f<-function(ftxt){
-  require(data.table)
-  require(magrittr)
-  require(qdap)
+  library(data.table)
+  library(magrittr)
+  library(qdap)
 
 
 }

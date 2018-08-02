@@ -26,8 +26,8 @@ stmbow2lda.f<-function(
 		return(stmbow2lda)
 	}
 	# Check package requirements and arguments
-	require(stm,quietly = T)
-	require(data.table)
+	library(stm,quietly = T)
+	library(data.table)
 
 	stmbow2lda<-list()
 	stmbow2lda$model

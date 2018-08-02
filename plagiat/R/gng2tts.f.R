@@ -5,7 +5,7 @@
 #'
 #' @examples
 gng2tts.f<-function(){ # google ngram 2 token time series
-	require(ngramr)
+  library(ngramr)
 	ng<-grep('ng1870-2010.RData',dir(recursive = T),value=T)
 	if(!length(ng)){
 		gnq<-strsplit(

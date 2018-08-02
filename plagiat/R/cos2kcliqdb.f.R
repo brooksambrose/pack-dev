@@ -14,7 +14,7 @@ cos2kcliqdb.f<-function(
 	,type=c('crel','utel')
 )
 {
-	require(data.table)
+  library(data.table)
 	mel2comps.dir
 	for(i in type) if(i%in%dir(mel2comps.dir)) {
 		p<-paste(mel2comps.dir,i,sep=.Platform$file.sep)

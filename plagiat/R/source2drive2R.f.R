@@ -14,10 +14,10 @@ source2drive2R.f <- function(
 	mis<-c(id=missing(id),gid=missing(gid),title.search=missing(title.search))
 	if(all(mis)) stop('Specify id or title.search')
 	if(all(!mis[-2])) {warning('Both id and title.search provided, only id used.')}
-	require(RGoogleDrive)
-	require(httr)
-	require(data.table)
-	require(magrittr)
+	library(RGoogleDrive)
+	library(httr)
+	library(data.table)
+	library(magrittr)
 	options(
 		drive.app=d.app
 		,drive.secret=d.secret

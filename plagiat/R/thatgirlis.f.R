@@ -5,7 +5,7 @@ thatgirlis.f <- function(
   ,plot=F
 )
 {
-  require(network)
+  library(network)
   ns<-network.size(n)
   edist<-table(n%e%ew)
   z<-(ns*(ns-1)/2)-sum(edist)

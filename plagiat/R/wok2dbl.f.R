@@ -19,7 +19,7 @@ wok2dbl.f <- function(
   }
 
   #NEWER WOK Database Import
-  require(data.table)
+  library(data.table)
 
   files<-list.files(dir,full.names=T,recursive=T)
 

@@ -14,9 +14,9 @@ lda2ftxt.f<-function(
 	# out.dir<-grep(paste(out.dir,'$',sep=''),d,value=T)
 	# if(!length(out.dir)) {warning('out.dir not found, saving to current working directory.');out.dir<-getwd()}
 
-	require(colorspace)
+	library(colorspace)
 	library(RColorBrewer)
-	require(data.table)
+  library(data.table)
 
 	mx<-max(sapply(1:nrow(doc.top), function(x) max(doc.top[x,]*top.word)))
 	s<-1:length(map)

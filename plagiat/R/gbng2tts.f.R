@@ -21,9 +21,9 @@ gbng2tts.f <- function(
   ,slug='auto'
   ,sm=0
 ){
-  require(magrittr)
-  require(data.table)
-  require(ngramr)
+  library(magrittr)
+  library(data.table)
+  library(ngramr)
   query<-data.table(query)
   pfs<-.Platform$file.sep
   n<-dim(query) %>% as.list()

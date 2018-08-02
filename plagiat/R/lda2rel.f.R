@@ -9,7 +9,7 @@ lda2rel.f<- function(stmbow2lda,R = 10,lambda.step = 0.5,reorder.topics = FALSE,
 		return(get(setdiff(ls(),c(l,'l'))))
 	}
 
-	require(data.table,quietly = T)
+	library(data.table,quietly = T)
 	phi = stmbow2lda$top.word.phi.beta
 	theta = stmbow2lda$doc.top.theta
 	vocab = stmbow2lda$vocab

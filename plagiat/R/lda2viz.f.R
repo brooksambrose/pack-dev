@@ -3,8 +3,8 @@ lda2viz.f<-function(stmbow2lda,out.dir,rt=F,ob=F,launch=T){
 	# from http://cpsievert.github.io/LDAvis/newsgroup/newsgroup.html
 	# http://nlp.stanford.edu/events/illvi2014/papers/sievert-illvi2014.pdf
 	# http://glimmer.rstudio.com/cpsievert/xkcd/
-	require(LDAvis,quietly = T)
-	require(servr,quietly = T)
+  library(LDAvis,quietly = T)
+  library(servr,quietly = T)
 	library(RJSONIO,quietly = T)
 
 	json <- createJSON(

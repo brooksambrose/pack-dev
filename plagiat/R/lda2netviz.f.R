@@ -1,7 +1,7 @@
 #'Network visualizations and clustering.
 lda2netviz.f<-function(stmbow2lda,thresh="choose"){
-	require(igraph,quietly=T)
-	require(network,quietly = T)
+  library(igraph,quietly=T)
+  library(network,quietly = T)
 
 	bam<-stmbow2lda$doc.top.theta
 	b<-quantile(bam,seq(0,1,.05))

@@ -5,8 +5,8 @@ mel2comps.f <- function(
   ,min.size=3
 )
 {
-  require(data.table)
-  require(igraph)
+  library(data.table)
+  library(igraph)
   out
   ret<-list()
   for(i in type) if(i%in%names(bel2mel)) {

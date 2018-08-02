@@ -11,10 +11,10 @@ tts2grgr.f <- function(
   gbng2tts
   ,order
 ){
-  require(data.table)
-  require(forecast)
-  require(lmtest)
-  require(ggplot2)
+  library(data.table)
+  library(forecast)
+  library(lmtest)
+  library(ggplot2)
   if(missing(order)) {d<-copy(gbng2tts)} else {d<-gbng2tts[,Phrase:=factor(Phrase,levels=order)]}
   setkey(d,Phrase,Year)
   lv<-c('Identity','First Difference')

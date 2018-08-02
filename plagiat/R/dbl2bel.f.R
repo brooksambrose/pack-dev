@@ -36,7 +36,7 @@ dbl2bel.f<-function(
 		return(dbl2bel)
 	}
 	### check function requirements ###
-	require(data.table)
+  library(data.table)
 	out
 
 	### draw only citation edge information from wok2dbl ###

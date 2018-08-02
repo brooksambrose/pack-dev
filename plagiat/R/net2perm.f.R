@@ -12,7 +12,7 @@ net2perm.f <- function(
 	,nsim
 )
 {
-	require(network)
+  library(network)
 	cat("\nPermuting random poisson edge distribution\nSimulating...")
 	perm<-list()
 	s<-network.size(mel2net)

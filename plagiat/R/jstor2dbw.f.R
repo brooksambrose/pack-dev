@@ -44,9 +44,9 @@ jstor2dbw.f<-function(
 	}
 
 	import.dfr.jstor.f<-function(zip){
-		require(tm)
-		require(SnowballC)
-		require(data.table)
+	  library(tm)
+	  library(SnowballC)
+	  library(data.table)
 
 		temp <- tempdir()
 		unzip(zip,exdir=temp)
@@ -77,7 +77,7 @@ jstor2dbw.f<-function(
 	}
 
 	if(in.parallel){
-		require(doParallel)
+	  library(doParallel)
 		cl <- makeCluster(detectCores() )
 		registerDoParallel(cl, cores = detectCores() )
 		jstor2dbw <- foreach(i = zips,.packages = c('data.table','tm','SnowballC'),.inorder=F) %dopar% try(import.dfr.jstor.f(zip=i))

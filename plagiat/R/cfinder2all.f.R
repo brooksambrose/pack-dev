@@ -20,7 +20,7 @@ cfinder2all.f<-function(
 	)
 )
 {
-	require(data.table)
+  library(data.table)
 	fileps<-list.files(cf.in,recursive=T,full.names=T)
 	ret<-list()
 	for(i in which){
@@ -36,7 +36,7 @@ cfinder2all.f<-function(
 				raw
 			}
 
-			require(doParallel)
+			library(doParallel)
 			cl <- makeCluster(detectCores() )
 			registerDoParallel(cl, cores = detectCores() )
 
@@ -62,7 +62,7 @@ cfinder2all.f<-function(
 				raw
 			}
 
-			require(doParallel)
+			library(doParallel)
 			cl <- makeCluster(detectCores() )
 			registerDoParallel(cl, cores = detectCores() )
 

@@ -25,8 +25,8 @@ strdist.dend.picker<-function(
 )
 {
 
-  require(dendextend)
-  require(data.table)
+  library(dendextend)
+  library(data.table)
   rect.dendrogram<-function (tree, k = NULL, which = NULL, x = NULL, h = NULL, border = 2,
                              cluster = NULL, horiz = FALSE, density = NULL, angle = 45,
                              text = NULL, text_cex = 1, text_col = 1, xpd = TRUE, lower_rect, hpk=NULL,

@@ -7,7 +7,7 @@
 #'
 #' @examples
 arima2plot <- function(tts2arima){
-  require(data.table)
-  require(ggplot2)
+  library(data.table)
+  library(ggplot2)
   tts2arima[,]
 }

@@ -18,10 +18,10 @@ ftxt2stmbow.f<-function(
 	,out.dir
 	,sample.docs=NULL
 ){
-	require(stm,quietly = T)
-	require(data.table,quietly = T)
-	require(SnowballC,quietly = T)
-	require(tm,quietly = T)
+  library(stm,quietly = T)
+  library(data.table,quietly = T)
+  library(SnowballC,quietly = T)
+  library(tm,quietly = T)
 	pfs<-.Platform$file.sep
 	sfn<-"ftxt2stmbow.RData"
 	if(check.for.saved.output) if(any(grepl(sfn,dir(recursive=T,full.names=T,ignore.case=T)))) {

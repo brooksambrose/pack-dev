@@ -29,9 +29,9 @@ master2wok.f<-function(
 		load(dir(pattern='master2wok.RData',full.names=T,recursive=T,ignore.case=F)[1])
 		return(master2wok)
 	}
-	require(rvest)
-	require(data.table)
-	if(detect.language) require(cldr)
+  library(rvest)
+  library(data.table)
+	if(detect.language) library(cldr)
 	if(is.null(njour)) { # get total number of journals from first p
 		njour<-read_html(masterurl) %>% html_node("p") %>% html_text()
 		njour<- regexpr('[0-9]+',njour) %>% regmatches(x=njour) %>% as.numeric()

@@ -1,8 +1,8 @@
 #'Community detection.
 lda2netcom.f<-function(stmbow2lda,out.dir,freq.weight,reps=10,mx.grp=30){
-	require(data.table)
-	require(igraph)
-	require(magrittr)
+  library(data.table)
+  library(igraph)
+  library(magrittr)
 
 	if(!missing(freq.weight)) stmbow2lda$doc.top.theta<-freq.weight * stmbow2lda$doc.top.theta
 	m<-stmbow2lda$doc.top.theta%*%t(stmbow2lda$doc.top.theta)

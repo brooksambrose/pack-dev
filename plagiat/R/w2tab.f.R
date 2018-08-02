@@ -10,7 +10,7 @@ w2tab.f <- function(
   ,addlev=NULL
 )
 {
-  require(data.table)
+  library(data.table)
   w<-grep("w",names(dbl2w),value=T) #automatically processes any "weight" variables with a w- prefix
   nw<-nchar(w)
   lvar<-w[which.max(nw)]
