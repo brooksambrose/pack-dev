@@ -3,31 +3,52 @@
 #' @param jpdf
 #' @param ocr
 #' @param depth
+#' @param ncores
+#' @param logdir
 #'
 #' @return
 #' @export
 #'
 #' @examples
-jpdf2imp.f<-function(jpdf,ocr=F,depth=5){
+jpdf2imp.f<-function(jpdf,ocr=F,depth=5,ncores,logdir){
   library(data.table)
   library(stringr)
   library(pdftools)
   library(stringdist)
   library(igraph)
   library(progress)
-  # library(parallel)
-  # ncores<-c(1,detectCores()/2 %>% ceiling) %>% max
+
+  # parallel always seems slower
+  if(missing(ncores)) ncores<-c(1,parallel::detectCores()/2 %>% ceiling) %>% max
+  ncores<-1
 
   # import
-  imp<-jpdf %>% lapply(pdf_text)
-  imp %<>% lapply(str_split,'\n')
+  jimp<-function(x) {
+    x<-pdf_text(x) %>% as.list
+    # find last cover page, usually only one except in long titles
+    w<-grep('collaborating with JSTOR to digitize preserve and extend access' %>% strsplit(' ') %>% unlist %>% paste(collapse='[\n, ]+'),x)[1]
+    if(w>1){
+      x[w]<-x[1:w] %>% unlist %>% paste(collapse='\n')
+      x[0:(w-1)]<-NULL
+      x[[1]] %<>% sub('This content downloaded from[^\n]+','',.) %>% sub('All use subject to[^\n]+','',.)
+    }
+    x<-strsplit(unlist(x),'\n')
+    attr(x,'ncp')<-w
+    x
+  }
+  cat('Importing text from',length(jpdf),'pdfs:\n')
+  imp<-pbapply::pblapply(jpdf,cl=ncores,jimp)
+
   # separate cover page
   cp<-lapply(imp,function(x) x[[1]])
   for(i in 1:length(imp)) imp[[i]][1]<-NULL
+  ncp<-sapply(imp,attr,'ncp')
+
   # ocr
-  oc<-sapply(imp,sapply,length) %>% sapply(function(x) 3%in%x) %>% which
+  oc<-sapply(imp,sapply,length) %>% sapply(function(x) any((1:3)%in%x)) %>% which
   if(length(oc)){
     cat('\n',length(oc),' undigitized documents detected.',sep='')
+    if(!missing(logdir)) writeLines(jpdf[oc],paste(logdir,'log_badocr.txt',sep=.Platform$file.sep))
     if(!ocr) {
       cat(' Removing from corpus:',basename(jpdf[oc]),sep='\n')
       dropped<-jpdf[oc]
@@ -35,22 +56,27 @@ jpdf2imp.f<-function(jpdf,ocr=F,depth=5){
       cp<-cp[-oc]
       imp<-imp[-oc]
     } else {
-      cat(' Performing optical character recognition:')
-      ol<-sapply(jpdf[oc],function(x) suppressMessages(pdftools::pdf_info(x))$pages)
-      pb <- progress_bar$new(format = "  [:bar] :elapsed :eta",total = sum(ol)-length(ol), clear = FALSE, width= 60)
-      ol<-sapply(ol,seq,from=2)
-      pb$tick(0)
-      for(i in 1:length(ol)) for(j in 1:length(ol[[i]])){
+      ol<-sapply(jpdf[oc],function(x) suppressMessages(pdftools::pdf_info(x))$pages,simplify = F,USE.NAMES = T)
+      ol<-mapply(seq,to=ol,from=ncp[oc]+1,USE.NAMES = T,SIMPLIFY = F)
+      ol<-mapply(function(d,p) list(d=d,p=p)
+                 ,d=rep(names(ol),sapply(ol,length))
+                 ,p=unlist(ol)
+                 ,SIMPLIFY = F,USE.NAMES = F)
+      cat(' Performing optical character recognition on',length(ol),'pages:\n')
+
+      tocr<-function(y) {
         x<-pdftools::pdf_convert(
-          pdf = names(ol)[i]
+          pdf = y$d
           ,dpi=300
-          ,pages=ol[[i]][j]
-          ,filenames = sprintf('%s/%s%03d.png',tempdir(),sub('.pdf','',basename(names(ol[i]))),ol[[i]][j])
+          ,pages=y$p
+          ,filenames = tempfile(pattern = sub('.pdf',sprintf('_%03d_',y$p),basename(y$d)),fileext = '.png')
           ,verbose = F
         )
-        imp[[oc[i]]][[j]]<-tesseract::ocr(x) %>% gsub('\n\n+','\n     ',.) %>% stringr::str_split('\n') %>% `[[`(1)
-        pb$tick()
+        tesseract::ocr(x) %>% gsub('\n\n+','\n     ',.) %>% strsplit('\n') %>% `[[`(1)
       }
+
+      imp[oc]<-pbapply::pblapply(ol,cl=ncores,tocr) %>% split(sapply(ol,`[[`,'d'))
+
     }
   }
   # metadata key
@@ -87,9 +113,9 @@ jpdf2imp.f<-function(jpdf,ocr=F,depth=5){
     journal=sapply(source,`[`,1)
     ,year=sapply(source,function(x) grep('^[0-9]{4}$',x,value = T) %>% tail(1))
   )]
-  setcolorder(met,c('doc','journal','year','title','author','source','url','accessed'))
+  met[,ncp:=ncp]
+  setcolorder(met,c('doc','journal','year','title','author','source','url','accessed','ncp'))
   # header detection, accurate solution is too slow
-  cat('\nHeader detection\n')
   clusth<-function(y) {
     y<-gsub(' +',' ',y)
     m<-1-stringdistmatrix(y,y,method = 'jw',p = .1)
@@ -98,7 +124,6 @@ jpdf2imp.f<-function(jpdf,ocr=F,depth=5){
     r<-data.table(c=c)
     r[,s:=sapply(c,function(x) E(induced_subgraph(n,x))$weight%>% mean)]
     r<-r[sapply(c,length)>1]
-    pb$tick()
     r
   }
 
@@ -109,25 +134,31 @@ jpdf2imp.f<-function(jpdf,ocr=F,depth=5){
     d<-c(depth,sapply(x,length)) %>% min
     sapply(x,function(y) {tail(y,d)}) %>% t %>% data.table %>% setnames(paste0('f',1:ncol(.)))})
 
+  # headers not removed from single page articles, need to revisit at volume level rather than paper level
   il<-sapply(imp,length)==1
-  pb <- progress_bar$new(format = "  [:bar] :elapsed :eta",total = sum(sapply(h,dim)[2,],sapply(f,dim)[2,]), clear = FALSE, width= 60)
-  pb$tick(0)
-  hc<-lapply(h[!il],function(x) lapply(x,clusth))
-  fc<-lapply(f[!il],function(x) lapply(x,clusth))
-  for(i in (1:length(imp))[!il]){
+  cat('\nHeader detection:\n')
+  hc<-pbapply::pblapply(h[!il],cl=ncores,function(x) lapply(x,clusth))
+  cat('\nFooter detection:\n')
+  fc<-pbapply::pblapply(f[!il],cl=ncores,function(x) lapply(x,clusth))
+  ix<-(1:length(imp))[!il]
+  for(i in ix){
     l<-sapply(imp[[i]],length)
-    drop<-sapply(hc[[i]],function(x) x[,mean(s)>.9&.N<5]) %>% which
-    for(j in 1:length(l)) imp[[i]][[j]]<-imp[[i]][[j]][-c(drop,tail(1:l[j],depth)[sapply(fc[[i]],function(x) x[,mean(s)>.9&.N<5]) %>% which])]
+    hdrop<-sapply(hc[[which(ix==i)]],function(x) x[,mean(s)>.9&.N<5]) %>% which
+    for(j in 1:length(l)) {
+      fdrop<-tail(1:l[j],depth)[sapply(fc[[which(ix==i)]],function(x) x[,mean(s)>.9&.N<5]) %>% which]
+      imp[[i]][[j]]<-imp[[i]][[j]][-c(hdrop,fdrop) %>% na.omit]
+    }
   }
+
   # paragraph detection
   cat('\nParagraph detection\n')
   imp<-lapply(imp,function(x) {
     data.table(
       pag=1:length(x) %>% rep(sapply(x,length))
-      ,lin=sapply(x,length) %>% sapply(seq) %>% unlist
+      ,lin=lapply(x,length) %>% lapply(seq) %>% unlist
       ,txt=x %>% unlist
     )})
-  pb <- progress_bar$new(format = "  [:bar] :elapsed :eta",total = length(imp), clear = FALSE, width= 60)
+  pb <- progress_bar$new(format = "  [:bar] :elapsed :eta",total = length(imp), clear = FALSE, width= 60,complete='+',incomplete = ' ')
   cn<-c('doc','pag','lin','par','txt')
   pb$tick(0)
   for(i in 1:length(imp)) {
