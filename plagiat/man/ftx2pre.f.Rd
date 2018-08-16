@@ -4,10 +4,11 @@
 \alias{ftx2pre.f}
 \title{Full text to pre-processed text.}
 \usage{
-ftx2pre.f(ftx, pick = F, pl = "pl.RData", lvl = "sen", frq = 1)
+ftx2pre.f(ftx, pick = F, pl = "d/q/pl.RData", lvl = "sen", frq = 2,
+  nch = 2)
 }
 \arguments{
-\item{ftx}{}
+\item{frq}{}
 }
 \description{
 Full text to pre-processed text.
