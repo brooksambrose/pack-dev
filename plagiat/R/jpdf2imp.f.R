@@ -45,7 +45,7 @@ jpdf2imp.f<-function(jpdf,ocr=F,depth=5,ncores,logdir){
   ncp<-sapply(imp,attr,'ncp')
 
   # ocr
-  oc<-sapply(imp,sapply,length) %>% sapply(function(x) any((1:3)%in%x)) %>% which
+  oc<-lapply(imp,sapply,length) %>% sapply(function(x) any((1:3)%in%x)) %>% which
   if(length(oc)){
     cat('\n',length(oc),' undigitized documents detected.',sep='')
     if(!missing(logdir)) writeLines(jpdf[oc],paste(logdir,'log_badocr.txt',sep=.Platform$file.sep))
@@ -72,7 +72,7 @@ jpdf2imp.f<-function(jpdf,ocr=F,depth=5,ncores,logdir){
           ,filenames = tempfile(pattern = sub('.pdf',sprintf('_%03d_',y$p),basename(y$d)),fileext = '.png')
           ,verbose = F
         )
-        tesseract::ocr(x) %>% gsub('\n\n+','\n     ',.) %>% strsplit('\n') %>% `[[`(1)
+        invisible(tesseract::ocr(x)) %>% gsub('\n\n+','\n     ',.) %>% strsplit('\n') %>% `[[`(1)
       }
 
       imp[oc]<-pbapply::pblapply(ol,cl=ncores,tocr) %>% split(sapply(ol,`[[`,'d'))
@@ -151,25 +151,27 @@ jpdf2imp.f<-function(jpdf,ocr=F,depth=5,ncores,logdir){
   }
 
   # paragraph detection
-  cat('\nParagraph detection\n')
-  imp<-lapply(imp,function(x) {
-    data.table(
-      pag=1:length(x) %>% rep(sapply(x,length))
-      ,lin=lapply(x,length) %>% lapply(seq) %>% unlist
-      ,txt=x %>% unlist
-    )})
-  pb <- progress_bar$new(format = "  [:bar] :elapsed :eta",total = length(imp), clear = FALSE, width= 60,complete='+',incomplete = ' ')
-  cn<-c('doc','pag','lin','par','txt')
-  pb$tick(0)
-  for(i in 1:length(imp)) {
-    imp[[i]][,es:=grepl('[.!?\'\",]$',txt)]
-    imp[[i]][,bp:=grepl(' {3,6}',txt)]
-    imp[[i]][,par:=c(T,es[-.N]&bp[-1]) %>% cumsum]
-    imp[[i]][,doc:=jpdf[i]]
-    imp[[i]][,setdiff(names(imp[[i]]),cn):=NULL]
-    setcolorder(imp[[i]],cn)
-    pb$tick()
+  cat('\nParagraph detection:\n')
+  par<-function(i,cn=c('doc','pag','lin','par','txt')) {
+    x<-imp[[i]]
+    pag<-1:length(x) %>% rep(sapply(x,length))
+    lin<-sapply(x,length) %>% `[`(!!.) %>% lapply(seq) %>% unlist
+    txt<-x %>% unlist
+    if(length(pag)!=length(lin)|length(lin)!=length(txt)|length(pag)!=length(txt)) browser()
+    x<-data.table(
+      pag
+      ,lin
+      ,txt
+    )
+    x[,es:=grepl('[.!?\'\",]$',txt)]
+    x[,bp:=grepl(' {3,6}',txt)]
+    x[,par:=c(T,es[-.N]&bp[-1]) %>% cumsum]
+    x[,doc:=jpdf[i]]
+    x[,setdiff(names(x),cn):=NULL]
+    setcolorder(x,cn)
+    x
   }
+  imp<-pbapply::pblapply(1:length(imp),cl=ncores,par)
   imp<-rbindlist(imp) %>% setkey(doc)
   setkey(met,doc)
   list(imp=imp,met=met)

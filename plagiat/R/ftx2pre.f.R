@@ -1,12 +1,16 @@
 #' Full text to pre-processed text.
 #'
 #' @param ftx
+#' @param pick
+#' @param pl
+#' @param lvl
+#' @param frq
 #'
 #' @return
 #' @export
 #'
 #' @examples
-ftx2pre.f<-function(ftx,pick=F,pl='pl.RData',lvl='sen',frq=1){
+ftx2pre.f<-function(ftx,pick=F,pl='d/q/pl.RData',lvl='sen',frq=2,nch=2){
   library(data.table)
   library(magrittr)
   library(tm)
@@ -56,13 +60,14 @@ ftx2pre.f<-function(ftx,pick=F,pl='pl.RData',lvl='sen',frq=1){
   # Step 3.6 Pre-process to Cull --------------------------------------------
 
   doc<-unique(ftx[,.(doc,com)])[,.(doc=.N),by=com] %>% setkey(com) # number of documents a word appears in
-  hed<-unique(ftx[,.(doc,hed,com)])[,.(hed=.N),by=com] %>% setkey(com)
-  lin<-unique(ftx[,.(doc,hed,lin,com)])[,.(lin=.N),by=com] %>% setkey(com)
-  sen<-unique(ftx[,.(doc,hed,lin,sen,com)])[,.(sen=.N),by=com] %>% setkey(com)
-  tdd<-doc[hed][lin][sen] %>% setkey(com)
+  par<-unique(ftx[,.(doc,par,com)])[,.(par=.N),by=com] %>% setkey(com)
+  lin<-unique(ftx[,.(doc,par,lin,com)])[,.(lin=.N),by=com] %>% setkey(com)
+  sen<-unique(ftx[,.(doc,par,lin,sen,com)])[,.(sen=.N),by=com] %>% setkey(com)
+  tdd<-doc[par][lin][sen] %>% setkey(com)
 
   ftx[,cul:=(com%in%tdd[get(lvl)<=frq,com])]
-  ftx[,stm:=factor(com,levels=com[!(cul|com==''|pun|sto)] %>% unique %>% sort)]
+  ftx[,nch:=nchar(com)<nch]
+  ftx[,stm:=factor(com,levels=com[!(nch|cul|com==''|pun|sto)] %>% unique %>% sort)]
   # ~ fin ~ -----------------------------------------------------------------
   ftx
 }

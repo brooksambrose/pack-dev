@@ -4,6 +4,7 @@
 #'
 #' @return
 #' @export
+#' @import data.table
 #'
 #' @examples
 imp2ftx.f<-function(imp){

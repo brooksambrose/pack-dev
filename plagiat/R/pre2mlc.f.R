@@ -13,9 +13,9 @@ pre2mlc.f<-function(pre){
   f<-function(sd) pre[,.(list({x<-stm %>% as.numeric %>% table;x<-rbind(names(x) %>% as.numeric,x);attr(x,'dimnames')<-NULL;x})),by=sd]$V1
   mlc<-list(
     doc=f('doc')
-    ,hed=f(c('doc','hed'))
-    ,lin=f(c('doc','hed','lin'))
-    ,sen=f(c('doc','hed','lin','sen'))
+    ,par=f(c('doc','par'))
+    ,lin=f(c('doc','par','lin'))
+    ,sen=f(c('doc','par','lin','sen'))
     ,voc=pre[,levels(stm)]
   )
   mlc
