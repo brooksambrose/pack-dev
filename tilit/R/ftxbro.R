@@ -21,3 +21,5 @@ ftxbro<-function(ftx){
   cat(x,sep='\n\t')
   invisible(x)
 }
+#    getOption('viewer')(jpdf %>% paste0('#page=3'))
+#ftx[10] %>% ftxbro
