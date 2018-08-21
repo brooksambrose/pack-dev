@@ -5,13 +5,14 @@
 #' @param pat
 #' @param beg.bef
 #' @param end.aft
+#' @param ... Additional arguments to knitr::kable.
 #'
 #' @return
 #' @export
 #' @import data.table
 #' @importFrom magrittr %>%
 #' @examples
-jstorm2tab.f<-function(jstorm,beg.bef=1900,end.aft=2000,lan='ENGLISH',pat='(anth)|(soci[oa])|([^a-z]poli)|(econ)'){
+jstorm2tab.f<-function(jstorm,beg.bef=1900,end.aft=2000,lan='ENGLISH',pat='(anth)|(soci[oa])|([^a-z]poli)|(econ)',...){
   library(data.table)
   library(magrittr)
   long<-jstorm[start<(beg.bef)&stop>(end.aft)]
@@ -21,5 +22,5 @@ jstorm2tab.f<-function(jstorm,beg.bef=1900,end.aft=2000,lan='ENGLISH',pat='(anth
     ,pg=sapply(lang,function(x) x[[1]][1,4])
   )]
   setkey(long,bg,start,stop)
-  long[lan][grep(pat,title,ignore.case = T),.(title,start,stop)] %>% knitr::kable(.)
+  long[lan][grep(pat,title,ignore.case = T),.(title,start,stop)] %>% knitr::kable(.,...)
 }

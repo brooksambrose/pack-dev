@@ -21,6 +21,6 @@ pre2tel.f<-function(pre,stop=100){
   }}
   r<-rbindlist(r)
   setnames(r,c('doc','s','r','ew'))
-  r<-r[,.(ew=sum(ew)),by=.(doc,s,r)]
+  r<-r[,.(ew=sum(ew)),by=.(s,r)]
   r
 }

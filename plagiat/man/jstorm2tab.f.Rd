@@ -5,10 +5,10 @@
 \title{JSTOR Master list to Table output}
 \usage{
 jstorm2tab.f(jstorm, beg.bef = 1900, end.aft = 2000, lan = "ENGLISH",
-  pat = "(anth)|(soci[oa])|([^a-z]poli)|(econ)")
+  pat = "(anth)|(soci[oa])|([^a-z]poli)|(econ)", ...)
 }
 \arguments{
-\item{end.aft}{}
+\item{...}{Additional arguments to knitr::kable.}
 }
 \description{
 JSTOR Master list to Table output

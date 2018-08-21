@@ -1,16 +1,22 @@
 #' Takes stm style bag of words as input and gives LDA.
 #'
 #' @param stmbow stm formatted bag of words, as given by textProcessor command or stmbow importer.
+#' @param out.dir
 #' @param k Number of topics.
 #' @param alpha The alpha parameter must be greater than 0. Alpha < 1 assumes that each document is constructed from relatively few topics. Alpha > 1 assumes that each is constructed from many topics. If you aren't sure choose the convention: 50/k, which will also be the default if you specify nothing.
-#' @param visualize.results Logical, if TRUE provides visualization tools to help interpret LDA output.
-#' @param verbose Print iteration progress (very verbose!).
-#' @param out.dir
 #' @param sig.pri
 #' @param it
+#' @param visualize.results Logical, if TRUE provides visualization tools to help interpret LDA output.
+#' @param verbose Print iteration progress (very verbose!).
+#' @param save.to.disk Save an .RData file of the object; helpful for lengthy estimations. May be buggy across environments.
 #' @param check.for.saved.output
 #' @param ... Other arguments to stm.
-#' @param save.to.disk Save an .RData file of the object; helpful for lengthy estimations. May be buggy across environments.
+#'
+#' @import stm data.table
+#' @return
+#' @export
+#'
+#' @examples
 stmbow2lda.f<-function(
 	stmbow,out.dir
 	,k=0,alpha=NULL,sig.pri=.5,it='Spectral'
@@ -25,13 +31,9 @@ stmbow2lda.f<-function(
 		load(dir(pattern=paste("stm-model-k",k,"-alpha",round(alpha,3),".RData",sep=""),full.names=T,recursive=T,ignore.case=F)[1])
 		return(stmbow2lda)
 	}
-	# Check package requirements and arguments
-	library(stm,quietly = T)
-	library(data.table)
 
 	stmbow2lda<-list()
-	stmbow2lda$model
-	stmbow2lda<-selectModel(
+	stmbow2lda$model<-stm::stm(
 		documents=stmbow$documents
 		,vocab=stmbow$vocab
 		,K=k
@@ -39,7 +41,6 @@ stmbow2lda.f<-function(
 		,control=list(alpha=alpha)
 		,sigma.prior=sig.pri
 		,verbose=verbose
-		,runs = 100
 		,...
 	)
 	stmbow2lda$top.word.phi.beta<-sapply(data.frame(stmbow2lda$model$beta$logbeta),function(x) sapply(x,function(y) ifelse(is.infinite(y),.Machine$double.eps,exp(y)))) # called beta by stm, epsilon closest thing to zero the machine can represent, necessary to prevent error
@@ -60,6 +61,6 @@ stmbow2lda.f<-function(
 		f<-paste(out.dir,paste("stm-model-k",k,"-alpha",round(alpha,3),".RData",sep=""),sep=pfs)
 		save(stmbow2lda,file=f)
 	}
-	topicQuality(stmbow2lda$mod,stmbow$documents)
+	#stm::topicQuality(stmbow2lda$mod,stmbow$documents)
 	stmbow2lda
 }

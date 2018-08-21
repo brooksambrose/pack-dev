@@ -6,6 +6,9 @@
 \usage{
 lda2viz.f(stmbow2lda, out.dir, rt = F, ob = F, launch = T)
 }
+\arguments{
+\item{launch}{}
+}
 \description{
 Different approaches to reduce and visualize the standard topic-document and topic-word word matrices output by LDA and other topic modelling estimations.
 }
