@@ -17,15 +17,23 @@ mlk2sim.f<-function(mlk,bw=1,bh=.002,conf=1/100,tail=2,rep=1000,theme=theme_bw()
 
   conf<-1-conf/tail
 
-  fit<-mlk[,.(lam=vcd::goodfit(K,'poisson')$par$lambda),by=level] %>% setkey(level)
-  dp<-mlk[,.(x=list(do.call(seq,range(K) %>% as.list))),by=level][fit]
-  dp<-data.table(dp[,.(dp=dpois(x %>% unlist,lam)),by=level],x=dp$x %>% unlist)
+  fit<-mlk[,.(fit=list(vcd::goodfit(K,'poisson'))),by=level]
+  mlk2<-fit[,do.call(rbind,fit),by=level] %>% setnames(c('level','observed','count','fitted','type','method','df','par'))
 
-  psim<-function(x) replicate(rep,rpois(mlk[x,.N],fit[x,lam]) %>% table %>% prop.table %>% data.table,simplify = F) %>% rbindlist %>% setnames(c('c','d')) %>% data.table(level=x,.)
-  sim<-pbapply::pblapply(fit$level %>% levels,psim) %>% rbindlist
+  fit<-fit[,.(lam=sapply(fit,function(x) x$par$lambda)),keyby=level]
+  psim<-function(x) {
+    pbapply::pbreplicate(
+      rep
+      ,rpois(mlk[x,.N],fit[x,lam]) %>%
+        table %>% prop.table %>% data.table,simplify = F
+    ) %>% rbindlist %>% setnames(c('c','d')) %>% data.table(level=x,.)
+  }
+  sim<-lapply(fit$level %>% levels,psim) %>% rbindlist
   sim[,c:=as.numeric(c)]
 
-  mlk2<-mlk[,vcd::goodfit(K),by=level][,.(count,observed=prop.table(observed),fitted=prop.table(fitted)),by=level][count>=min(sim$c)]
+  mlk2<-mlk2[,.(count,observed=prop.table(observed),fitted=prop.table(fitted)),by=level][count>=min(sim$c)]
+
+
 
   # figure ------------------------------------------------------------------
   ggplot2::theme_set(theme)
