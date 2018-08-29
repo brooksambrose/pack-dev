@@ -4,11 +4,11 @@
 \alias{master2jstorm.f}
 \title{JSTOR Journal Master List}
 \usage{
-master2jstorm.f(pageurl,
-  xp = "//*[@id=\\"content\\"]/div[1]/div/div[4]/div/table")
+
+  master2jstorm.f(downloadurl = "http://www.jstor.org/kbart/collections/all-archive-titles?contentType=journals")
 }
 \arguments{
-\item{xp}{}
+\item{downloadurl}{}
 }
 \description{
 JSTOR Journal Master List
