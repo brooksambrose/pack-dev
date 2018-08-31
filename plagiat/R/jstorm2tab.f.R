@@ -11,7 +11,9 @@
 #' @import data.table
 #' @importFrom magrittr %>%
 #' @examples
-jstorm2tab.f<-function(jstorm,beg.bef=1900,end.aft=2000,lan='ENGLISH',pat='(anth)|(soci[oa])|([^a-z]poli)|(econ)'){
+jstorm2tab.f<-function(jstorm,jclu,beg.bef=1900,end.aft=2000,lan='ENGLISH',pat='(anth)|(soci[oa])|([^a-z]poli)|(econ)'){
+  jstorm
+
   long<-jstorm[start<(beg.bef)&stop>(end.aft)]
   long[,lang:=list(lapply(title,cld2::detect_language_mixed))]
   long[,`:=`(

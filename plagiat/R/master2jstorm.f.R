@@ -36,5 +36,7 @@ master2jstorm.f<-function(downloadurl='http://www.jstor.org/kbart/collections/al
   gc<-data.table(title_id=V(g)$name,title_history=membership(gc),key='title_id')
   setkey(jstorm,title_id)
   jstorm<-merge(jstorm,gc)
+  th<-jstorm[,.(title_current=title_id[sapply(fc,max) %>% which.max]),keyby=title_history] %>% setnames('title_history','th')
+  jstorm[,title_history:=th[title_history,title_current]]
   jstorm
   }
