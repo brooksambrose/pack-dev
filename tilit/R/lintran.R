@@ -1,4 +1,4 @@
-#' Title
+#' Linear transformation of vector into new range
 #'
 #' @param x
 #' @param s1
