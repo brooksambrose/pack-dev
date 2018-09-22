@@ -10,7 +10,10 @@
 pre2mlc.f<-function(pre){
   library(data.table)
   setkey(pre,doc,lin,cha)
-  f<-function(sd) pre[,.(list({x<-stm %>% as.numeric %>% table;x<-rbind(names(x) %>% as.numeric,x);attr(x,'dimnames')<-NULL;x})),by=sd]$V1
+  f<-function(sd) {
+    r<-pre[,.(spm=list({x<-stm %>% as.numeric %>% table;x<-rbind(names(x) %>% as.numeric,x);attr(x,'dimnames')<-NULL;x})),by=sd]
+    r[sapply(spm,length) %>% as.logical]
+    }
   mlc<-list(
     doc=f('doc')
     ,par=f(c('doc','par'))

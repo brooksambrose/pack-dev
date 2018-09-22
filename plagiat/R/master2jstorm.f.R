@@ -8,7 +8,7 @@
 #' @import data.table igraph
 #'
 #' @examples
-master2jstorm.f<-function(downloadurl='http://www.jstor.org/kbart/collections/all-archive-titles?contentType=journals'){
+master2jstorm.f<-function(downloadurl='http://www.jstor.org/kbart/collections/all-archive-titles?contentType=journals',det.lan=T){
   jstorm<-fread(paste('wget -qO-',downloadurl),fill=T,quote='') # unknown error in fread https://github.com/Rdatatable/data.table/issues/2859
   jstorm[,`:=`(fc=full_coverage %>% stringr::str_extract_all('[0-9]{4}') %>% lapply(function(x) {
     x %<>% unlist %>% as.integer %>% range
@@ -38,5 +38,11 @@ master2jstorm.f<-function(downloadurl='http://www.jstor.org/kbart/collections/al
   jstorm<-merge(jstorm,gc)
   th<-jstorm[,.(title_current=title_id[sapply(fc,max) %>% which.max]),keyby=title_history] %>% setnames('title_history','th')
   jstorm[,title_history:=th[title_history,title_current]]
+  if(det.lan) jstorm[,lang:=list(
+    lapply(publication_title,function(x){
+      sapply(x %>% strsplit(' / ') %>% unlist %>% gsub('[A-Z.]{3,9}','',.),function(y){
+        l<-cld2::detect_language_mixed(y)
+        c('UNKNOWN',l$classificaton$language[1])[1+l$reliabale]
+      })}))]
   jstorm
   }

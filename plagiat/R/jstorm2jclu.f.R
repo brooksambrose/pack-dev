@@ -20,8 +20,17 @@ jstorm2jclu.f<-function(jstorm){
   jstormr<-jstorm[,.(discipline=discipline %>% unlist %>% unique),keyby=title_history]
   jstormr<-jstormr[data.table(th=jclu$title_history$names,m=jclu$title_history %>% membership) %>% setkey(th)]
   jstormr<-jstormr[,.N,by=.(m,discipline)] %>% setorder(m,-N)
-  jstormr<-jstormr[,.(super=discipline[1],N=sum(N)),by=m][,!'m']
+  j<-jstormr[,.(super=discipline[1],N=sum(N)),by=m][,!'m']
+  w<-j[,which(duplicated(super)|duplicated(super,fromLast = T))]
+  if(length(w)) {
+    s<-jstormr[,.(super=discipline[1:2] %>% paste(collapse=' (') %>% paste0(')')),by=m][w,super]
+    j[w,super:=s]
+    }
+  jstormr<-j
 
   j<-data.table(title_history=jclu$title_history$names,super=jstormr[jclu$title_history %>% membership,super]) %>% setkey(title_history)
+  jstormr %>% setorder(-N)
+  jstormr[,Pct:=round(prop.table(N)*100,1)]
+
   c(jclu,tab=list(jstormr),super=list(j))
 }
