@@ -6,17 +6,20 @@
 #' @param conf
 #' @param tail
 #' @param rep
+#' @param crs
 #'
 #' @return
 #' @export
 #' @import data.table ggplot2 tilit
 #'
 #' @examples
-mlk2sim.f<-function(mlk,bw=1,bh=.002,conf=1/100,tail=2,rep=1000){
+mlk2sim.f<-function(mlk,bw=1,bh=.002,conf=1/100,tail=2,rep=1000,crs=1){
 
   conf<-1-conf/tail
   conf<-qt(conf,rep)*c(-1,1)
 
+  if('factor'!=mlk[,class(level)]) mlk[,level:=factor(level)]
+  setkey(mlk,level)
   fit<-mlk[,.(fit=list(vcd::goodfit(K,'poisson'))),by=level]
   mlk2<-fit[,do.call(rbind,fit),by=level] %>% setnames(c('level','observed','count','fitted','type','method','df','par'))
 

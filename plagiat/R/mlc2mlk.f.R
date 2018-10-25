@@ -2,12 +2,13 @@
 #'
 #' @param mlc
 #' @param lev
+#' @param verb
 #'
 #' @return
 #' @export
 #' @import data.table
 #' @importFrom magrittr %>%
 #' @examples
-mlc2mlk.f<-function(mlc,lev=c('doc','par','sen')) {
-  lapply(mlc[lev], function(x) stm::stm(documents = x,vocab = mlc$voc,K = 0,max.em.its = 0,verbose = F)$settings$dim$K) %>% t
+mlc2mlk.f<-function(mlc,lev=c('doc','par','sen'),verb=F) {
+  lapply(mlc[lev], function(x) stm::stm(documents = x$spm,vocab = mlc$voc,K = 0,max.em.its = 0,verbose = verb)$settings$dim$K) %>% t
 }
