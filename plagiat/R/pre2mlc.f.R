@@ -5,10 +5,10 @@
 #'
 #' @return
 #' @export
+#' @import data.table magrittr
 #'
 #' @examples
 pre2mlc.f<-function(pre){
-  library(data.table)
   setkey(pre,doc,lin,cha)
   f<-function(sd) {
     r<-pre[,.(spm=list({x<-stm %>% as.numeric %>% table;x<-rbind(names(x) %>% as.numeric,x);attr(x,'dimnames')<-NULL;x})),by=sd]

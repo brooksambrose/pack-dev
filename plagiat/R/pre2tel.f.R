@@ -13,7 +13,7 @@ pre2tel.f<-function(pre,stop=100){
   tam<-pre[!(pun|sto),.(doc,lin,cha,sen,com)]
   setkey(tam,doc,sen)
   r<-list()
-  pb <- progress_bar$new(format = "  [:bar] :elapsedfull :eta",total = tam[,.(doc,sen)] %>% unique %>% nrow, clear = FALSE, width= 60)
+  pb <- progress_bar$new(format = ':elapsedfull [:bar] :percent :eta',total = tam[,.(doc,sen)] %>% unique %>% nrow, clear = FALSE, width= 60)
 
   for(i in tam[,unique(doc)]) for(j in tam[i,unique(sen)]) {pb$tick();for(k in tam[i][sen>=j,unique(sen)]) {
     if(k-j>=stop) next
