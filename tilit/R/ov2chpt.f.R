@@ -9,12 +9,12 @@
 #' @export
 #' @import data.table
 #' @examples
-ov2chpt.f<-function(x,drv=1,min.period=2,inc.ov=T,warn=T){
+ov2chpt.f<-function(x,drv=1,min.period=2,inc.ov=F,warn=T){
   if(length(x)>1000) stop('Computing long vectors is inefficient, warn=T to disable warning.')
   dif<-function(y){for(i in 1:drv) y<-diff(y);y}
   r<-data.table(x,d=c(rep(NA,drv),dif(x)))
   if(inc.ov) j<-1:2 else j<-2
-  r[,g:=c(rep(1,drv),ecp::e.divisive(cbind(x,d)[-(1:drv),j] %>% cbind,min.size = min.period)$cluster) %>% factor]
+  r[,g:=c(rep(1,drv-1),{k<-ecp::e.divisive(cbind(x,d)[-(1:drv),j] %>% cbind,min.size = min.period)$cluster;c(k,max(k))}) %>% factor]
   r
 }
 # TODO add this to SO answer at ?
