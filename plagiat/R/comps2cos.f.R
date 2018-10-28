@@ -3,6 +3,7 @@
 #' @param mel2comps.dir
 #' @param cosparallel.path A path to cosparallel executable (e.g. ~/cosparallel-code/cos). Default assumes cos executable is in path.
 #' @param threads
+#' @param window.buffer
 #'
 #' @return
 #' @export
@@ -27,7 +28,7 @@ comps2cos.f<-function(
 	for(i in mel2comps){
 		com<-paste(
 			'cd \'',sub('mel2comps.txt','\'',i)
-			,' && ',sub('cos$','extras/maximal_cliques',cosparallel.path),' mel2comps.txt'
+			,' && ',sub('cos$','maximal_cliques',cosparallel.path),' mel2comps.txt'
 			,' && ',cosparallel.path,' -P ',threads,' mel2comps.txt.mcliques'
 			,sep='')
 		cat('Source data: ',i,'\n\nThreads used: ',threads,'\n\nsh: ',com,'\n\ncos stdout:\n\n',sep='')

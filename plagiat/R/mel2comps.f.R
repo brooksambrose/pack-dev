@@ -1,3 +1,14 @@
+#' Monopartite Edge List 2 Components
+#'
+#' @param bel2mel
+#' @param type
+#' @param out
+#' @param min.size
+#'
+#' @return
+#' @export
+#'
+#' @examples
 mel2comps.f <- function(
   bel2mel
   ,type=c('crel','utel')
