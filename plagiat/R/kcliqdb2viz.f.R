@@ -1,14 +1,4 @@
-#' Title
-#'
-#' @param cos2kcliqdb
-#' @param mel2comps.dir
-#' @param out
-#' @param type
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#depricated
 kcliqdb2viz.f<-function(
 	cos2kcliqdb
 	,mel2comps.dir=stop('Specify a mel2comps directory that includes cos output.')
