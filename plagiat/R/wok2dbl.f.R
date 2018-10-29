@@ -12,6 +12,7 @@
 #'
 #' @return
 #' @export
+#' @import data.table
 #'
 #' @examples
 wok2dbl.f <- function(
@@ -33,11 +34,7 @@ wok2dbl.f <- function(
     load(dir(path=out,pattern='wok2dbl.RData',recursive=T,full.names=T,ignore.case=F)[1])
     return(wok2dbl)
   }
-
-  #NEWER WOK Database Import
-  library(data.table)
-
-  files<-list.files(dir,full.names=T,recursive=T)
+  files<-list.files(dir,full.names=T,recursive=T,pattern='txt$')
 
   c<-0
   n<-length(files)
