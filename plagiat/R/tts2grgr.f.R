@@ -1,4 +1,4 @@
-#' Title
+#' Token Time Series 2 Granger Causality
 #'
 #' @param gbng2tts
 #' @param order

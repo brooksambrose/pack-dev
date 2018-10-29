@@ -1,4 +1,4 @@
-#' Title
+#' Token Time Series to ARIMA
 #'
 #' @param gbng2tts
 #' @param by
