@@ -1,4 +1,4 @@
-#' Title
+#' Database long 2 Bimodal Edge List
 #'
 #' @param wok2dbl
 #' @param out

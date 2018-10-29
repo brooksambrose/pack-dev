@@ -1,3 +1,19 @@
+#' Web of Knowledge 2 Database Long
+#'
+#' @param dir
+#' @param out
+#' @param art_rev_only
+#' @param sample.batches
+#' @param sample.size
+#' @param save
+#' @param verbose
+#' @param check.for.saved.output
+#' @param imp.rul
+#'
+#' @return
+#' @export
+#'
+#' @examples
 wok2dbl.f <- function(
   dir=stop("Choose input directory containing WOK batches.")
   ,out=stop("Specify output directory for your project.")
