@@ -1,4 +1,4 @@
-#' Title
+#' COS parallel to K-clique Community Database
 #'
 #' @param mel2comps.dir
 #' @param out
@@ -6,15 +6,15 @@
 #'
 #' @return
 #' @export
+#' @import data.table
 #'
 #' @examples
-cos2kcliqdb.f<-function(
+cos2kcc.f<-function(
 	mel2comps.dir=stop('Specify a mel2comps directory that includes cos output.')
 	,out=stop('Specify output directory.')
 	,type=c('crel','utel')
 )
 {
-  library(data.table)
 	mel2comps.dir
 	for(i in type) if(i%in%dir(mel2comps.dir)) {
 		p<-paste(mel2comps.dir,i,sep=.Platform$file.sep)
@@ -72,6 +72,6 @@ cos2kcliqdb.f<-function(
 
 		attributes(ret[[i]])$levels<-olevs
 	}
-	save(ret,file=paste(out,'cos2kcliqdb.RData',sep=.Platform$file.sep))
+	save(ret,file=paste(out,'cos2kcc.RData',sep=.Platform$file.sep))
 	ret
 }

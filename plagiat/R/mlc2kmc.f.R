@@ -7,9 +7,6 @@
 #' @import data.table magrittr skmeans cluster ggrepel tilit
 #' @examples
 mlc2kmc.f<-function(mlc){
-  library(skmeans)
-  library(cluster)
-  library(ggrepel)
 
   kmc<-list()
   for(i in c('doc','par','sen')){

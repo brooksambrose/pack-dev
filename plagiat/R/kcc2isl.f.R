@@ -1,22 +1,26 @@
 #' K-clique Communities to Island plot
 #'
 #' @param bel2mel
-#' @param cos2kcliqdb
+#' @param cos2kcc
 #' @param type
 #' @param co
+#' @param ordinal
+#' @param border
+#' @param nodes
 #'
 #' @return
 #' @export
+#' @import data.table magrittr igraph
 #'
 #' @examples
-kcc2isl.f<-function(bel2mel,cos2kcliqdb,type=c('utel','crel')[2],co,ordinal=T,border=T){
+kcc2isl.f<-function(bel2mel,cos2kcc,type=c('utel','crel')[2],co,ordinal=T,border=T,nodes=T){
 
   net<-graph_from_edgelist(bel2mel[[type]][,.(cr1,cr2)] %>% as.matrix,F)
   E(net)$weight<-bel2mel[[type]]$ew
   str<-which(igraph::degree(net)>0)
 
-  kdo<-cos2kcliqdb[[type]]$orig %>% do.call(what=c)
-  kdo<-lapply(kdo,function(x) which(V(net)$name%in%attr(cos2kcliqdb[[type]],'levels')[x]))
+  kdo<-cos2kcc[[type]]$orig %>% do.call(what=c)
+  kdo<-lapply(kdo,function(x) which(V(net)$name%in%attr(cos2kcc[[type]],'levels')[x]))
   kl<-names(kdo) %>% sub('k([0-9]+).+','\\1',.) %>% as.integer
   clr<-kl %>% `-`(min(.)) %>% `+`(1)
   if(ordinal){
@@ -59,7 +63,7 @@ kcc2isl.f<-function(bel2mel,cos2kcliqdb,type=c('utel','crel')[2],co,ordinal=T,bo
     ,vertex.label=NA
     ,vertex.frame.color=NA #'gray'
     ,vertex.color='lightgray'
-    ,vertex.shape='square'
+    ,vertex.shape=if(nodes) 'square' else 'none'
     ,mark.groups = kdo
     ,mark.col = clr[-1]
     ,mark.border = if(border) clrs else NA

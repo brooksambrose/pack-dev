@@ -5,6 +5,7 @@
 #'
 #' @return
 #' @export
+#' @import forecast
 #'
 #' @examples
 tts2arima.f <- function(
@@ -12,7 +13,6 @@ tts2arima.f <- function(
   ,by=c('batch','Phrase')
 )
 {
-  library(forecast)
   tts2arima<-gbng2tts[,list(aa=list(
     auto.arima(
       ts(Frequency,start = min(Year),frequency = 1)

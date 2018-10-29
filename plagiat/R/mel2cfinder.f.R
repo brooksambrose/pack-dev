@@ -5,6 +5,7 @@
 #'
 #' @return
 #' @export
+#' @import data.table
 #'
 #' @examples
 mel2cfinder.f<-function(
@@ -12,7 +13,6 @@ mel2cfinder.f<-function(
 	,out=stop("Specify output directory for your project.")
 )
 {
-	library(data.table)
 	if('crel'%in%names(bel2mel)) {
 		bel2mel$crel[,ut:=NULL]
 		setkey(bel2mel$crel,cr1,cr2)

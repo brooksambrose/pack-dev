@@ -2,6 +2,7 @@
 #'
 #' @return
 #' @export
+#' @import magrittr data.table
 #'
 #' @examples
 sas2imp.f<-function(sas,rbl=T,h2v=T){

@@ -10,7 +10,7 @@
 #'
 #' @return
 #' @export
-#' @import data.table magrittr tilit
+#' @import data.table magrittr tilit stringdist
 #'
 #' @examples
 ftx2pre.f<-function(ftx,pick=F,pl='d/q/pl.RData',lvl='doc',frq=2,nchr=2,bch.sz=10000){
@@ -81,13 +81,10 @@ ftx2pre.f<-function(ftx,pick=F,pl='d/q/pl.RData',lvl='doc',frq=2,nchr=2,bch.sz=1
   # Step 3.5 Dendrogram Picker ----------------------------------------------
 
   if(pick){
-    library(stringdist)
     m<-ftx[!(sto|pun),com %>% unique %>% sort] %>%
       grep('^[A-Z]',.,value=T) %>%
       stringdist::stringdistmatrix(useNames = T,method='jw',p=.1)
     h<-hclust(m) %>% as.dendrogram()
-    library(plagiat)
-    library(tilit)
     if(file.exists(pl)) {load(pl)} else {f<-pl;pl<-strdist.dend.picker(h,instruct = T);save(pl,file=f)}
 
     # update the lemma and common terms with new sets

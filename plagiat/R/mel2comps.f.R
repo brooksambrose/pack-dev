@@ -7,6 +7,7 @@
 #'
 #' @return
 #' @export
+#' @import data.table igraph
 #'
 #' @examples
 mel2comps.f <- function(
@@ -16,8 +17,6 @@ mel2comps.f <- function(
   ,min.size=3
 )
 {
-  library(data.table)
-  library(igraph)
   out
   ret<-list()
   for(i in type) if(i%in%names(bel2mel)) {
