@@ -72,6 +72,7 @@ cos2kcc.f<-function(
 
 		attributes(ret[[i]])$levels<-olevs
 	}
-	save(ret,file=paste(out,'cos2kcc.RData',sep=.Platform$file.sep))
+  cos2kcc<-ret
+	save(cos2kcc,file=paste(out,'cos2kcc.RData',sep=.Platform$file.sep))
 	ret
 }

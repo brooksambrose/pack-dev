@@ -40,9 +40,9 @@ kcc2isl.f<-function(bel2mel,cos2kcc,type=c('utel','crel')[2],co,ordinal=T,border
     X <- diag(c(1, sat, 1)) %*% rgb2hsv(col2rgb(cols))
     hsv(X[1,], X[2,], X[3,])
   }
-  clrs<-desat(clr,.8)
-  clr<-desat(clr,.4)
-  clrl<-desat(clrl,.4)
+  clrs<-desat(clr,.6)
+  clr<-desat(clr,.3)
+  clrl<-desat(clrl,.3)
 
   if(missing(co)){
     #t1<-system.time(co<-layout_with_fr(net,niter=5e4,grid = 'grid'))/60
@@ -54,9 +54,9 @@ kcc2isl.f<-function(bel2mel,cos2kcc,type=c('utel','crel')[2],co,ordinal=T,border
     )
     )
     cat(round(t1/60,2),'mins')
-
+    attr(co,'layout-time')<-t1
   }
-  par(bg=clr[1])
+  par(bg=clr[1],mar=rep(0,4))
   plot(
     net
     ,vertex.size=.5
@@ -71,11 +71,11 @@ kcc2isl.f<-function(bel2mel,cos2kcc,type=c('utel','crel')[2],co,ordinal=T,border
     ,mark.expand = 2
     ,mark.shape = 0
     ,layout=co
+    ,margin=c(0,-.5,0,0)
   )
   #shape::colorlegend(col=clrl,main='K',zval=sort(unique(kl)),main.col='white',lab.col='white',zlim = c(1,max(kl)),posy = c(0.01,.99),zlevels=10,cex=.25,left=T)
   uc<-par("usr")
-  plotrix::color.legend(xl=uc[2]*.8,xr=uc[2]*.9,yb=uc[3]*1.2,yt=uc[4]*1.2,legend = c(1:2,unique(kl)),rect.col = unique(clrs),gradient = 'y',col='white',cex=.75)
-  attr(co,'layout-time')<-t1
+  plotrix::color.legend(xl=uc[2]*.7,xr=uc[2]*.8,yb=uc[3]*.9,yt=uc[4]*.9,legend = c(1:2,unique(kl)),rect.col = unique(clrs),gradient = 'y',col='white',cex=.75)
   co
 }
 
