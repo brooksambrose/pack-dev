@@ -36,10 +36,6 @@ kcc2isl.f<-function(bel2mel,cos2kcc,type=c('utel','crel')[2],co,ordinal=T,border
   clr<-c(top,clr)
   clrl<-c(top,clrl)
 
-  desat <- function(cols, sat=0.5) {
-    X <- diag(c(1, sat, 1)) %*% rgb2hsv(col2rgb(cols))
-    hsv(X[1,], X[2,], X[3,])
-  }
   clrs<-desat(clr,.6)
   clr<-desat(clr,.3)
   clrl<-desat(clrl,.3)
