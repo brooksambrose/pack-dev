@@ -7,26 +7,33 @@
 #' @param ... Arguments to network::network.layout
 #' @param isolates
 #' @param grp
+#' @param dim
+#' @param zref
+#' @param zkref
 #'
 #' @return
 #' @export
 #' @import igraph ggplot2 ggnetwork tilit
+#' @importFrom network network.dyadcount
+#' @importFrom network network.edgecount
+#' @importFrom network network.size
+#' @importFrom network %e%
+#' @importFrom network %v%
+#' @importFrom network %v%<-
 #'
 #' @examples
-jclu2net.f<-function(jclu,proj=c('gt','gd')[2],warn=T,layout=c('fruchtermanreingold','latent')[1],isolates=T,grp=1,dim=2,...){
+jclu2net.f<-function(jclu,proj=c('gt','gd')[2],warn=T,layout=c('fruchtermanreingold','latent')[1],isolates=T,grp=1,dim=2,zref=NULL,zkref=NULL,...){
   if((V(jclu[[proj]]) %>% length)>100) if(warn) stop('Graphs over 100 nodes are slow and ugly.')
-  m<-V(jclu[[proj]])$memb
-  k<-!(table(m)-1)
-  k<-names(k)[k]
-  m %<>% unique
-  net<-induced_subgraph(
-    jclu[[proj]]
-    ,which(!V(jclu[[proj]])$name%in%(if(isolates) m %>% setdiff(k) else m ))
-  )
+  m<-V(jclu[[proj]])$memb %>% unique
+  net<-induced_subgraph(jclu[[proj]],which(!V(jclu[[proj]])$name%in%m))
+  if(!isolates) {
+    iso<-igraph::degree(net) %>% {which(.==0)} %>% names
+    net<-induced_subgraph(net,which(!V(net)$name%in%iso))
+  }
   net<-asNetwork(net)
   co<-layout %>% dim %>% is.null %>% `!`
 
-  if(co) if(network::network.size(net)!=nrow(layout)) stop('Layout and network do not match, did you forget to set isolates?')
+  if(co) if(network.size(net)!=nrow(layout)) stop('Layout and network do not match, did you forget to set isolates?')
 
     if(!co) if('latent'==layout[1]){
     # permute poisson
@@ -37,7 +44,6 @@ jclu2net.f<-function(jclu,proj=c('gt','gd')[2],warn=T,layout=c('fruchtermanreing
     op %<>% table %>% data.table %>% setnames('.','c') %>% .[,c:=as.integer(c)]
     pp[is.na(pp)]<-0
 
-    ihs <- function(x) log10(x + sqrt(x ^ 2 + 1))
     op[,sim:='observed']
     pp[,sim:='simulated']
     sp[,sim:='parametric']
@@ -65,6 +71,8 @@ jclu2net.f<-function(jclu,proj=c('gt','gd')[2],warn=T,layout=c('fruchtermanreing
         ,response='weight'
         ,family='Poisson.log'
         ,verbose=2
+        ,Z.ref=zref
+        ,Z.K.ref=zkref
         ,control=control.ergmm(...)
       ))
       attr(lnet,'layout-time')<-t1
@@ -84,8 +92,12 @@ jclu2net.f<-function(jclu,proj=c('gt','gd')[2],warn=T,layout=c('fruchtermanreing
     theme_blank() + scale_color_brewer(type = 'qual',palette='Dark2') +
     theme(legend.title = element_blank())
   if('net'%in%ls()) attr(p,'net')<-net
+  attr(p,'zref')<-layout %>% apply(2,scale)
+  attr(p,'zkref')<-net%v%'memb' %>% factor(levels=levels(jclu[[sub('g','f',proj)]])) %>% droplevels %>% as.integer
   if('lnet'%in%ls()) attr(p,'lnet')<-lnet
   if('pl'%in%ls()) attr(p,'sim')<-pl
+  if('iso'%in%ls()) attr(p,'iso')<-iso
+  attr(p,'ggnet')<-pd
   p
 }
 
