@@ -44,5 +44,6 @@ master2jstorm.f<-function(downloadurl='http://www.jstor.org/kbart/collections/al
         l<-cld2::detect_language_mixed(y)
         c('UNKNOWN',l$classificaton$language[1])[1+l$reliabale]
       })}))]
+  jstorm[,j:=title_history==title_id]
   jstorm
   }

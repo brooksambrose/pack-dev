@@ -11,6 +11,8 @@
 jstorm2jclu.f<-function(jstorm,shallow=F,eng=F){
 
   if(eng) jstorm<-jstorm[sapply(discipline,function(x) 'ENGLISH'%in%x)]
+  nT<-jstorm[,.N]
+  nP<-jstorm[,publisher_name %>% unique %>% length]
   jstorm<-jstorm[title_id==title_history][sapply(discipline,length)>0]
   el<-jstorm[,.(discipline=unlist(discipline) %>% unique),by=title_history] %>% as.matrix
   g<-graph_from_edgelist(el)
@@ -73,6 +75,9 @@ jstorm2jclu.f<-function(jstorm,shallow=F,eng=F){
   E(jclu$gd)$cross<-rev(c("within","between"))[(!crossing(jclu$discipline,jclu$gd)) + 1]
   E(jclu$gt)$cross<-rev(c("within","between"))[(!crossing(jclu$title_history,jclu$gt)) + 1]
 
-
-  c(jclu,ft=list(f1),fd=list(f2),tab=list(tab),super=list(j),N=list(jstorm[,.N]),b=list(b))
+  nS<-f1 %>% levels %>% length
+  nL<-jstorm$discipline %>% unlist %>% unique %>% length
+  jclu<-c(b=list(b),jclu,ft=list(f1),fd=list(f2),tab=list(tab),super=list(j))
+  jclu$n<-list(t=nT,j=jstorm[,sum(j)],p=nP,l=nL,s=nS,d=nL-nS)
+  jclu
 }
