@@ -15,6 +15,7 @@
 #' @importFrom plotly highlight
 #' @importFrom plotly highlight_key
 #' @importFrom plotly plot_ly
+#' @importFrom plotly add_surface
 #' @importFrom plotly add_mesh
 #' @importFrom plotly add_markers
 #' @importFrom plotly layout
