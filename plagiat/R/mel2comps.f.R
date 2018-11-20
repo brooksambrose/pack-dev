@@ -4,6 +4,7 @@
 #' @param type
 #' @param out
 #' @param min.size
+#' @param min.ew
 #'
 #' @return
 #' @export
@@ -15,12 +16,17 @@ mel2comps.f <- function(
   ,type=c('crel','utel')
   ,out=stop('Specify output directory')
   ,min.size=3
+  ,min.ew=2
 )
 {
   out
   ret<-list()
   for(i in type) if(i%in%names(bel2mel)) {
     cat('\n',i,'\n',sep='')
+    if(min.ew>1) {
+      cat('Removing edges weighing less than',min.ew,'\n')
+      bel2mel[[i]]<-bel2mel[[i]][ew>=min.ew]
+      }
     levs<-factor(bel2mel[[i]][,do.call(c,.SD),.SDcols=1:2])
     bel2mel[[i]]<-matrix(as.character(as.integer(levs)),ncol=2)
     levs<-levels(levs)
