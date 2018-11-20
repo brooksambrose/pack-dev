@@ -17,9 +17,12 @@
 #'
 #' @examples
 kcc2isl.f<-function(bel2mel,cos2kcc,wok2dbl,dbl2bel,type=c('utel','crel')[2],minew=1,co,ordinal=T,border=T,nodes=T,rad=.8,nit=1e4){
+  n1<-sub('el','1',type)
+  n2<-sub('el','2',type)
+  bel2mel[[type]]<-bel2mel[[type]][ew>=minew]
 
-  net<-graph_from_edgelist(bel2mel[[type]][ew>=minew,.(cr1,cr2)] %>% as.matrix,F)
-  E(net)$weight<-bel2mel[[type]]$ew
+  net<-graph_from_edgelist(bel2mel[[type]][,.(get(n1),get(n2))] %>% as.matrix,F)
+  E(net)$weight<-bel2mel[[type]][,ew]
   str<-which(igraph::degree(net)>0)
 
   kdo<-cos2kcc[[type]]$orig %>% do.call(what=c)
@@ -109,7 +112,7 @@ kcc2isl.f<-function(bel2mel,cos2kcc,wok2dbl,dbl2bel,type=c('utel','crel')[2],min
   str<-str[!duplicated(v,fromLast = T)]
   setkey(str,v)
   sfc[is.na(k),k:=str[.(sfc[is.na(k),v]),k]]
-
+  sfc[is.na(k),k:=0]
   sfc[is.na(g)&k==1,g:='k1.star']
   sfc[is.na(g),g:='hinge']
   setorder(sfc,v)
@@ -165,7 +168,6 @@ kcc2isl.f<-function(bel2mel,cos2kcc,wok2dbl,dbl2bel,type=c('utel','crel')[2],min
   sfc[,gn:=rep(.N,.N),by=g]
   sfc[,text:=paste0('k',k,'.',sub('^[^.]+\\.','',g),' (',gn,')\n',names,'\ncc:',cc,' ',text)]
   setorder(sfc,v)
-  sfc<-sfc[!is.na(k)]
   setattr(sfc,'colors',clrl)
   sfc
 }

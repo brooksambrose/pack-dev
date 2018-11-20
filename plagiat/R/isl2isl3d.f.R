@@ -7,6 +7,7 @@
 #' @param ex
 #' @param floor
 #' @param close
+#' @param tight
 #'
 #' @return
 #' @export
@@ -19,8 +20,8 @@
 #' @importFrom plotly layout
 #'
 #' @examples
-isl2isl3d.f<-function(kcc2isl,res=100,rad=5,ln=T,ex=F,floor=F,close=F){
-  library(plotly)
+isl2isl3d.f<-function(kcc2isl,res=100,rad=1/2,ln=T,ex=F,floor=F,close=F,tight=F){
+  kcc2isl<-copy(kcc2isl)
   bgc<-attr(kcc2isl,'colors')[1]
   bck<-list(backgroundcolor=bgc,color=bgc,showbackground=T,showspikes=F,visible=T,showticklabels=F,showaxeslabels=F,title=F,showgrid=F)
   cm<-kcc2isl %>% names %>% setdiff(ec('x,y,names,v,k,g,text,gn'))
@@ -42,10 +43,11 @@ isl2isl3d.f<-function(kcc2isl,res=100,rad=5,ln=T,ex=F,floor=F,close=F){
     ,kcc2isl[,.(x,y)]
     ,k=1
   )
-  rad<-kcc2isl[,mean(range(x) %>% diff,range(y) %>% diff)]/res*rad
-  ix[nn$nn.idx[nn$nn.dists<=rad],K:=kcc2isl$k[nn$nn.dists<=rad]]
-  ix[nn$nn.idx[nn$nn.dists>rad],K:=1]
-  ix<-ix[!is.na(K)]
+
+  rd<-kcc2isl[,mean(range(x) %>% diff,range(y) %>% diff)]/res*rad
+  ix[nn$nn.idx[nn$nn.dists<=rd],K:=kcc2isl$k[nn$nn.dists<=rd]]
+  ix[nn$nn.idx[nn$nn.dists>rd],K:=1]
+  if(tight) ix[is.na(K),K:=1] else ix<-ix[!is.na(K)]
   for(i in ix[,seq(.N)]) sfc$z[ix$xi[i],ix$yi[i]]<-ix$K[i]
 
   if(floor) sfc$z<-floor(sfc$z)
@@ -72,7 +74,7 @@ isl2isl3d.f<-function(kcc2isl,res=100,rad=5,ln=T,ex=F,floor=F,close=F){
 
   isl3d<-plot_ly(x=~x,y=~y,z=~k+.1,showlegend=F) %>%
     add_surface(data=sfc,x=~x,y=~y,z=~t(z),autocolorscale=F,colorscale=scs
-                #,hoverinfo='skip'
+                ,hoverinfo='skip'
                 ,colorbar=list(yanchor='bottom',len=.5,title='K',xpad=5),contours = list(
                   x = list(highlight=F),y = list(highlight=F),showlabels=T
                   ,z = list(show=TRUE,usecolormap=TRUE,highlight=F,highlightcolor="#ff0000",project=list(z=TRUE)
