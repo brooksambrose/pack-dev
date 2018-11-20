@@ -113,7 +113,6 @@ kcc2isl.f<-function(bel2mel,cos2kcc,wok2dbl,dbl2bel,type=c('utel','crel')[2],min
   sfc[is.na(g)&k==1,g:='k1.star']
   sfc[is.na(g),g:='hinge']
   setorder(sfc,v)
-  setattr(sfc,'colors',clrl)
 
   cr<-rbindlist(list(
     bel2mel[[type]][ew>=minew,.(ut=unlist(ut)),by=cr1] %>% setnames('cr1','cr')
@@ -124,11 +123,21 @@ kcc2isl.f<-function(bel2mel,cos2kcc,wok2dbl,dbl2bel,type=c('utel','crel')[2],min
   sfc[cr$cr,cc:=cr$N] # citation count
   sfc[,text:='']
   if(!missing(wok2dbl)) {
-    setkey(wok2dbl,id,field)
-    wok2dbl %<>% .[expand.grid(dbl2bel$ut %>% unique,ec('J9,PY,CR')),!'o']
-    if(!missing(dbl2bel)) if('zcr'%in%names(dbl2bel)) {
-      wok<-rbindlist(list(wok2dbl[field!='CR'],dbl2bel[,.(id=ut,field='CR',val=zcr)] %>% unique))
+    if(!missing(dbl2bel)) {
+      setkey(wok2dbl,id,field)
+      wok2dbl %<>% .[expand.grid(dbl2bel$ut %>% unique,ec('J9,PY,CR')),!'o']
+      setkey(dbl2bel,cr)
+      if('zcr'%in%names(dbl2bel)) {
+        wok<-rbindlist(list(wok2dbl[field!='CR'],dbl2bel[,.(id=ut,field='CR',val=zcr)] %>% unique))
+        setkey(dbl2bel,zcr)
+      }
+      sfc[,mut:=dbl2bel[names,table(ut) %>% mean %>% as.double],by=g]
+      sfc[,m2ut:=dbl2bel[names,table(ut) %>% sort(T) %>% .[2]],by=g]
+      sfc[,gini:=dbl2bel[names,table(ut) %>% ineq::Gini(.) %>% as.double],by=g]
+      sfc[,text:=paste0('mut:',round(mut,2),' m2ut:',m2ut,' gini:',round(gini,3),'\n')]
     } else {
+      setkey(wok2dbl,field)
+      wok2dbl %<>% .[ec('J9,PY,CR'),!'o']
       wok<-wok2dbl
     }
     so<-wok2mrg.f(wok,ec('CR,J9'))
@@ -149,12 +158,15 @@ kcc2isl.f<-function(bel2mel,cos2kcc,wok2dbl,dbl2bel,type=c('utel','crel')[2],min
     setkey(sfc,names)
     sfc[py$cr,names(py)[-1]:=py[,!'cr']]
 
-    sfc[,text:=paste0('py:',round(py),' ca:',round(ca))]
+    sfc[,text:=paste0(text,'py:',round(py),' ca:',round(ca))]
+
   }
 
   sfc[,gn:=rep(.N,.N),by=g]
   sfc[,text:=paste0('k',k,'.',sub('^[^.]+\\.','',g),' (',gn,')\n',names,'\ncc:',cc,' ',text)]
   setorder(sfc,v)
+  sfc<-sfc[!is.na(k)]
+  setattr(sfc,'colors',clrl)
   sfc
 }
 
