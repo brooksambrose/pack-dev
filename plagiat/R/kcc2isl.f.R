@@ -10,13 +10,19 @@
 #' @param rad
 #' @param nit
 #' @param minew
+#' @param wok2dbl
+#' @param dbl2bel
+#' @param area
+#' @param res
+#' @param pins
+#' @param hex hull expansion
 #'
 #' @return
 #' @export
-#' @import data.table magrittr igraph
+#' @import data.table magrittr igraph sp methods
 #'
 #' @examples
-kcc2isl.f<-function(bel2mel,cos2kcc,wok2dbl,dbl2bel,type=c('utel','crel')[2],minew=1,co,ordinal=T,border=T,nodes=T,rad=.8,nit=1e4){
+kcc2isl.f<-function(bel2mel,cos2kcc,wok2dbl,dbl2bel,type=c('utel','crel')[2],minew=1,co,ordinal=T,border=T,nodes=T,rad=.8,area=.8,nit=1e4,res=100,pins=T,hex=.001){
   n1<-sub('el','1',type)
   n2<-sub('el','2',type)
   bel2mel[[type]]<-bel2mel[[type]][ew>=minew]
@@ -27,6 +33,8 @@ kcc2isl.f<-function(bel2mel,cos2kcc,wok2dbl,dbl2bel,type=c('utel','crel')[2],min
 
   kdo<-cos2kcc[[type]]$orig %>% do.call(what=c)
   kdo<-lapply(kdo,function(x) which(V(net)$name%in%attr(cos2kcc[[type]],'levels')[x]))
+  kcc<-kdo
+
   kl<-names(kdo) %>% sub('k([0-9]+).+','\\1',.) %>% as.integer
   clr<-kl %>% `-`(min(.)) %>% `+`(1)
   if(ordinal){
@@ -49,18 +57,30 @@ kcc2isl.f<-function(bel2mel,cos2kcc,wok2dbl,dbl2bel,type=c('utel','crel')[2],min
   if(missing(co)){
     #t1<-system.time(co<-layout_with_fr(net,niter=5e4,grid = 'grid'))/60
     nnet<-intergraph::asNetwork(net)
-    area<-gorder(net)
     cat('\n calculated layout in...')
+    n<-gorder(net)
     t1<-system.time(co<-network::network.layout.fruchtermanreingold(
-      nnet,layout.par = list(niter=nit,repulse.rad=log(area)*area^rad,area=area*2/3)
+      nnet,layout.par = list(niter=nit,repulse.rad=log(n)*n^rad,area=n^area)
     )
     )
     cat(round(max(t1)/60,2),'mins')
+
+    co<-apply(co,2,scale,center=T,scale=F)
+    com<-components(net)
+    com<-com$membership==which.max(com$csize)
+    ex<-apply(co[com,],2,function(x) c(which(x<quantile(x,.05)),which(x>quantile(x,.95)))) %>% c %>% sort
+    vm<-varimax(co[ex,],normalize = F)
+    co<-co%*%vm$rotmat
+    if(diff(range(co[com,1]))<diff(range(co[com,2]))) co<-cbind(co[,2],co[,1])
+
     attr(co,'layout-time')<-t1
   } else {
+    if(pins) if(!is.null(attr(co,'surface'))) pin<-attr(co,'surface')
     setorder(co,v)
     co<-as.matrix(co[,.(x,y)])
   }
+
+  # plot 2d island
   par(bg=clr[1],mar=rep(0,4))
   plot(
     net
@@ -166,9 +186,53 @@ kcc2isl.f<-function(bel2mel,cos2kcc,wok2dbl,dbl2bel,type=c('utel','crel')[2],min
   }
 
   sfc[,gn:=rep(.N,.N),by=g]
-  sfc[,text:=paste0('k',k,'.',sub('^[^.]+\\.','',g),' (',gn,')\n',names,'\ncc:',cc,' ',text)]
+
+  el<-data.table(as_edgelist(net)) %>% setnames(ec('s,r'))
+  el<-merge(el,sfc[,.(names,k)],by.x='s',by.y='names') %>% setnames('k','sk')
+  el<-merge(el,sfc[,.(names,k)],by.x='r',by.y='names') %>% setnames('k','rk')
+  el[,inf:=rk<sk]
+  inf<-rbindlist(list(el[,.(names=s,inf)],el[,.(names=r,inf=!inf)]))
+  g<-merge(sfc[,.(names,g)],inf,by='names')[,.(minf=mean(inf)),by=g]
+  sfc<-merge(sfc,inf[,.(inf=mean(inf)),by=names],by='names')
+  sfc<-merge(sfc,g,by='g')
+
+  sfc[,text:=paste0('k',k,'.',sub('^[^.]+\\.','',g),' (',gn,') minf:',round(minf,3),'\n',names,'\ncc:',cc,' inf:',round(inf,3),' ',text)]
+
+  # construct 3d surface
+  ## TODO alpha hull radius
+  ## sapply(kcc,function(x) dist(sfc[x,.(x,y)]) %>% max) %>% max
   setorder(sfc,v)
+
+  if(pins) if(!exists('pin')) {
+    cat('\ncalculating surface')
+
+    wm<-setdiff(1:gorder(net),kcc %>% unlist %>% unique)
+    wmk<-degree(net)[wm]
+
+    xr<-range(co[,1])
+    yr<-range(co[,2])
+    cl<-min(diff(xr),diff(yr))/res
+    rd<-hex*res*cl
+    pin<-expand.grid(x=seq(xr[1],xr[2]+cl,cl),y=seq(yr[1],yr[2]+cl,cl)) %>% SpatialPoints # https://en.wikipedia.org/wiki/Pin_Art
+    kcc<-c(list(1:gorder(net)),kcc)
+    names(kcc)[1]<-'k1.all'
+    k<-kcc %>% names %>% sub('\\..+','',.) %>% unique
+    hul<-list()
+
+    for(i in k) hul[[i]]<-lapply(kcc[grep(paste0(i,'\\.'),names(kcc))],function(z) {
+      chull(sfc[z,.(x,y)]) %>% sfc[z][.,.(x,y)] %>% tilit::schull(.) %>%
+      {rbindlist(list(.,.[,.(x=x+rd,y)],.[,.(x=x-rd,y)],.[,.(x,y=y+rd)],.[,.(x,y=y-rd)]))} %>%
+        tilit::schull(.) %>% Polygon(hole=F)
+    }) %>% Polygons(ID = i)
+    hul<-SpatialPolygons(hul,1:length(hul))
+
+    ov<-pin %over% hul
+    pin <- data.table(as.data.frame(pin),k=as.integer(sub('k([0-9]+).*','\\1',k))[ov])[!is.na(k)]
+    setattr(sfc,'radius',rd)
+  }
+
   setattr(sfc,'colors',clrl)
+  setattr(sfc,'surface',pin)
   sfc
 }
 
