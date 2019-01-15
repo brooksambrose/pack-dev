@@ -12,6 +12,6 @@ lintran<-function(x,s2=c(0,1),s1=range(na.omit(x))) {
   w<-is.na(x)
   a=diff(s2)/diff(s1)
   b=s2[1]-a*s1[1]
-  x[!w]<-a*x[!w]+b
+  if(is.infinite(a)) x[!w]<-mean(s2) else x[!w]<-a*x[!w]+b
   x
 }
