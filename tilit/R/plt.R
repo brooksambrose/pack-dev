@@ -16,5 +16,6 @@ plt<-function(ggplot,output,...) {
       p$x$data[[i]][['hovertext']]<-NULL
     }
   }
+  attr(p,'package')<-'ggplotly'
   p
 }
