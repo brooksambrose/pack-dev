@@ -24,7 +24,7 @@
 #' @examples
 tree2igr.f<-function(kcc2tree,hcs,k,c1,c2,kcc,light=25,dark=75,ew,plot=F,root=F,limit=100,vpal='C',kcol=T,transform=F,dst=.75) {
   if(missing(kcc)) kcc<-paste0('k',k,'.k',k,'c',c1,'-',c2)
-  if(root) kcc<-kcc2tree$gph %>% dfs(root='k3.k3c1-22',neimode='out',unreachable=F,order=T) %>% .$order %>% unclass %>% na.omit %>% names %>% grep('[^r]$',.,value=T)
+  if(root) kcc<-kcc2tree$gph %>% dfs(root=kcc,neimode='out',unreachable=F,order=T) %>% .$order %>% unclass %>% na.omit %>% names %>% grep('[^r]$',.,value=T)
   if(missing(ew)) ew<-kcc2tree$mel[,min(weight)]
   mel<-kcc2tree$mel[
     ,col:=colorRampPalette(c('lightgray','black'))(100)[round(lintran(weight,c(light,dark)))]][
