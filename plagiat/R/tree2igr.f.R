@@ -16,30 +16,33 @@
 #' @param kcol
 #' @param transform
 #' @param dst
+#' @param print
 #'
 #' @return
 #' @export
 #' @import data.table magrittr igraph networkD3 tilit
 #'
 #' @examples
-tree2igr.f<-function(kcc2tree,hcs,k,c1,c2,kcc,light=25,dark=75,ew,plot=F,root=F,limit=100,vpal='C',kcol=T,transform=F,dst=.75) {
+tree2igr.f<-function(kcc2tree,hcs,k,c1,c2,kcc,light=25,dark=75,ew,plot=F,print=T,root=F,limit=100,vpal='C',kcol=T,transform=F,dst=.75,rev.pal=T) {
   if(missing(kcc)) kcc<-paste0('k',k,'.k',k,'c',c1,'-',c2)
   if(root) kcc<-kcc2tree$gph %>% dfs(root=kcc,neimode='out',unreachable=F,order=T) %>% .$order %>% unclass %>% na.omit %>% names %>% grep('[^r]$',.,value=T)
   if(missing(ew)) ew<-kcc2tree$mel[,min(weight)]
   mel<-kcc2tree$mel[
     ,col:=colorRampPalette(c('lightgray','black'))(100)[round(lintran(weight,c(light,dark)))]][
       kcc,on='g'][
-        ,vcol:=sub('k([0-9]+).+','\\1',g) %>% as.numeric %>% {if(transform) log(.) else .} %>% lintran(c(1,100)) %>%  round %>% {viridis::viridis(n=100,option=vpal,direction=-1)[.]} %>% desat(dst)][
+        ,vcol:=sub('k([0-9]+).+','\\1',g) %>% as.numeric %>% {if(transform) log(.) else .} %>% lintran(c(1,100)) %>%  round %>% {viridis::viridis(n=100,option=vpal,direction=ifelse(rev.pal,-1,1))[.]} %>% desat(dst)][
           weight>=ew]
   mel[is.na(col),col:=gray(.5)][is.na(vcol),vcol:=gray(.5)]
+  if(print){
+    cat('edge ')
+    print(mel[,table(weight)])
+  }
   gph<-graph_from_data_frame(mel[,.(from,to,weight)],directed=F,vertices=hcs[mel[,c(from,to) %>% unique %>% sort],on=names(hcs)[1]])
   go<-gorder(gph)
   if(go>limit) stop(paste('Graph size of',go,'exceeds limit of',limit))
   n<-igraph_to_networkD3(gph,group = V(gph)$ml)
   n$nodes$size<-V(gph)$N
   n$links$value<-1
-  cat('edge ')
-  print(mel[,table(weight)])
 
   igr<-forceNetwork(
     Links = n$links
@@ -64,6 +67,6 @@ tree2igr.f<-function(kcc2tree,hcs,k,c1,c2,kcc,light=25,dark=75,ew,plot=F,root=F,
     # ,height = 600
     # ,width = 800
   )
-  kcc2tree$kdb[kcc,on='name',cat('\n',txt,sep='')]
+  if(print) kcc2tree$kdb[kcc,on='name',cat('\n',txt,sep='')]
   if(plot) return(igr)
 }

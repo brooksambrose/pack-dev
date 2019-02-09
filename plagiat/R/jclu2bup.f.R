@@ -17,8 +17,11 @@ jclu2bup.f<-function(jclu,s=300){
   ms<-bipartite_projection(bs,remove.type = F)
   ms$proj1$name<-'journal'
   ms$proj2$name<-'label'
+  docx<-'docx'%in%knitr::opts_knit$get("rmarkdown.pandoc.to")
+  if(docx) par(mfrow=c(1,3))
   do.call(plot,args(bs))
   do.call(plot,args(ms$proj1))
   do.call(plot,args(ms$proj2))
+  if(docx) par(mfrow=c(1,1))
   c(list(b=bs),ms)
 }
