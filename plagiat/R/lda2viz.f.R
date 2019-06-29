@@ -14,7 +14,7 @@ lda2viz.f<-function(stmbow2lda,out.dir,rt=F,ob=F,launch=T){
   # from http://cpsievert.github.io/LDAvis/newsgroup/newsgroup.html
   # http://nlp.stanford.edu/events/illvi2014/papers/sievert-illvi2014.pdf
   # http://glimmer.rstudio.com/cpsievert/xkcd/
-
+  stmbow2lda$top.word.phi.beta[stmbow2lda$top.word.phi.beta==0]<-.Machine$double.eps
   json <- createJSON(
     phi = stmbow2lda$top.word.phi.beta
     ,theta = stmbow2lda$doc.top.theta
