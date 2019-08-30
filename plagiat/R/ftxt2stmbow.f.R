@@ -8,6 +8,12 @@
 #' @param out.dir
 #' @param sample.docs
 #' @param names A vector of document names. Coerced to character. If unspecified no names will be given. If unspecified and source given, files names will be assigned instead.
+#'
+#' @return
+#' @export
+#' @import stm data.table SnowballC tm
+#'
+#' @examples
 ftxt2stmbow.f<-function(
 	source.dir=NULL
 	,string=NULL
@@ -18,10 +24,6 @@ ftxt2stmbow.f<-function(
 	,out.dir
 	,sample.docs=NULL
 ){
-  library(stm,quietly = T)
-  library(data.table,quietly = T)
-  library(SnowballC,quietly = T)
-  library(tm,quietly = T)
 	pfs<-.Platform$file.sep
 	sfn<-"ftxt2stmbow.RData"
 	if(check.for.saved.output) if(any(grepl(sfn,dir(recursive=T,full.names=T,ignore.case=T)))) {

@@ -132,7 +132,7 @@ lda2rel.f<- function(stmbow2lda,R = 10,lambda.step = 0.5,reorder.topics = FALSE,
 							 loglift = round(log(lift[indices]), 4),
 							 stringsAsFactors = FALSE)
 	}
-	lambda.seq <- seq(0, 1, by=lambda.step)
+	lambda.seq <- if(!(length(lambda.step)-1)) seq(0, 1, by=lambda.step) else lambda.step
 	#if (missing(cluster)) {
 	tinfo <- lapply(as.list(lambda.seq), function(x) {x<-data.frame(find_relevance(x),lambda=as.character(x));data.frame(x,ord=1:R)})
 	#} else {

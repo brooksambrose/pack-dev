@@ -6,12 +6,12 @@
 #' @export
 #' @import ggplot2
 #' @examples
-myth<-function(ggplot){
+myth<-function(ggplot,pal=c('Dark2','Paired')){
   ggplot +
     theme_bw() +
-    scale_fill_brewer(type = 'qual',palette='Dark2') +
-    scale_color_brewer(type = 'qual',palette='Dark2') +
-    scale_y_continuous(labels = scales::comma) +
+    scale_fill_brewer(type = 'qual',palette=pal[1]) +
+    scale_color_brewer(type = 'qual',palette=pal[1]) +
+#    scale_y_continuous(labels = scales::comma) +
     theme(
       legend.position = c(.98, .98),
       legend.justification = c("right", "top"),
