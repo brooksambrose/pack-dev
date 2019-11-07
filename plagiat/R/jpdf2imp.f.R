@@ -1,23 +1,18 @@
 #' JSTOR PDF to imp
 #'
-#' @param jpdf
+#' @param jpdf Vector of full paths to every pdf you with to import.
 #' @param ocr
 #' @param depth
 #' @param ncores
 #' @param logdir
+#'
+#' @import data.table stringr pdftools stringdist igraph progress
 #'
 #' @return
 #' @export
 #'
 #' @examples
 jpdf2imp.f<-function(jpdf,ocr=F,depth=5,ncores,logdir){
-  library(data.table)
-  library(stringr)
-  library(pdftools)
-  library(stringdist)
-  library(igraph)
-  library(progress)
-
   # parallel always seems slower
   if(missing(ncores)) ncores<-c(1,parallel::detectCores()/2 %>% ceiling) %>% max
   ncores<-1
@@ -27,6 +22,7 @@ jpdf2imp.f<-function(jpdf,ocr=F,depth=5,ncores,logdir){
     x<-pdf_text(x) %>% as.list
     # find last cover page, usually only one except in long titles
     w<-grep('collaborating with JSTOR to digitize preserve and extend access' %>% strsplit(' ') %>% unlist %>% paste(collapse='[\n, ]+'),x)[1]
+    if(is.na(w)) w<-0
     if(w>1){
       x[w]<-x[1:w] %>% unlist %>% paste(collapse='\n')
       x[0:(w-1)]<-NULL
@@ -79,42 +75,44 @@ jpdf2imp.f<-function(jpdf,ocr=F,depth=5,ncores,logdir){
 
     }
   }
-  # metadata key
-  met<-data.table(
-    title=sapply(cp,function(x) {
-      b<-grep('^Author',x)
-      if(!length(b)) b<-grep('^Source',x)
-      x[1:(b-1)] %>% paste(collapse=' ') %>% sub(' +',' ',.)
-    })
-    ,author=lapply(cp,function(x) {
-      b<-grep('^Author',x)
-      e<-grep('^Source',x)
-      if((!length(b))|(!length(e))) return('')
-      x[b:(e-1)] %>% paste(collapse=' ') %>% sub('^[^:]+: ','',.) %>% str_split(',|( and )') %>% unlist %>%
-        sub('^ *','',.) %>% sub(' *$','',.) %>% sub(' +',' ',.) %>% `[`(.!='')
-    })
-    ,source=lapply(cp,function(x) {
-      b<-grep('^Source',x)
-      e<-grep('^Published',x)
-      x[b:(e-1)] %>% paste(collapse=' ') %>% sub('^[^:]+: ','',.) %>% str_split('[,)(]') %>% unlist %>%
-        sub('^ *','',.) %>% sub(' *$','',.) %>% sub(' +',' ',.) %>% `[`(.!='')
-    })
-    ,url=sapply(cp,function(x) {
-      b<-grep('^Stable',x)
-      x[b] %>% sub('^[^:]+: ','',.) %>% sub('^ *','',.) %>% sub(' *$','',.)
-    })
-    ,accessed=sapply(cp,function(x) {
-      b<-grep('^Accessed',x)
-      x[b] %>% sub('^[^:]+: ','',.) %>% sub('^ *','',.) %>% sub(' *$','',.)
-    })
-  )
-  met[,doc:=jpdf]
-  met[,`:=`(
-    journal=sapply(source,`[`,1)
-    ,year=sapply(source,function(x) grep('^[0-9]{4}$',x,value = T) %>% tail(1))
-  )]
-  met[,ncp:=ncp]
-  setcolorder(met,c('doc','journal','year','title','author','source','url','accessed','ncp'))
+  # metadata key if cover page
+  if(sum(ncp)) {
+    met<-data.table(
+      title=sapply(cp,function(x) {
+        b<-grep('^Author',x)
+        if(!length(b)) b<-grep('^Source',x)
+        x[1:(b-1)] %>% paste(collapse=' ') %>% sub(' +',' ',.)
+      })
+      ,author=lapply(cp,function(x) {
+        b<-grep('^Author',x)
+        e<-grep('^Source',x)
+        if((!length(b))|(!length(e))) return('')
+        x[b:(e-1)] %>% paste(collapse=' ') %>% sub('^[^:]+: ','',.) %>% str_split(',|( and )') %>% unlist %>%
+          sub('^ *','',.) %>% sub(' *$','',.) %>% sub(' +',' ',.) %>% `[`(.!='')
+      })
+      ,source=lapply(cp,function(x) {
+        b<-grep('^Source',x)
+        e<-grep('^Published',x)
+        x[b:(e-1)] %>% paste(collapse=' ') %>% sub('^[^:]+: ','',.) %>% str_split('[,)(]') %>% unlist %>%
+          sub('^ *','',.) %>% sub(' *$','',.) %>% sub(' +',' ',.) %>% `[`(.!='')
+      })
+      ,url=sapply(cp,function(x) {
+        b<-grep('^Stable',x)
+        x[b] %>% sub('^[^:]+: ','',.) %>% sub('^ *','',.) %>% sub(' *$','',.)
+      })
+      ,accessed=sapply(cp,function(x) {
+        b<-grep('^Accessed',x)
+        x[b] %>% sub('^[^:]+: ','',.) %>% sub('^ *','',.) %>% sub(' *$','',.)
+      })
+    )
+    met[,doc:=jpdf]
+    met[,`:=`(
+      journal=sapply(source,`[`,1)
+      ,year=sapply(source,function(x) grep('^[0-9]{4}$',x,value = T) %>% tail(1))
+    )]
+    met[,ncp:=ncp]
+    setcolorder(met,c('doc','journal','year','title','author','source','url','accessed','ncp'))
+  }
   # header detection, accurate solution is too slow
   clusth<-function(y) {
     y<-gsub(' +',' ',y)
@@ -173,6 +171,11 @@ jpdf2imp.f<-function(jpdf,ocr=F,depth=5,ncores,logdir){
   }
   imp<-pbapply::pblapply(1:length(imp),cl=ncores,par)
   imp<-rbindlist(imp) %>% setkey(doc)
-  setkey(met,doc)
-  list(imp=imp,met=met)
+  if(sum(ncp)) {
+    setkey(met,doc)
+    imp<-list(imp=imp,met=met)
+  } else {
+    imp<-list(imp=imp)
+  }
+  imp
 }

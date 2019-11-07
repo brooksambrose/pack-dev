@@ -16,6 +16,7 @@ myth<-function(ggplot,pal=c('Dark2','Paired')){
       legend.position = c(.98, .98),
       legend.justification = c("right", "top"),
       legend.box.just = "right",
-      legend.margin = margin(0, 0, 0, 0)
+      legend.margin = margin(0, 0, 0, 0),
+      legend.background =  element_rect(color=NA,fill=NA)
     )
 }

@@ -8,6 +8,7 @@
 #'
 #' @examples
 nn<-function(x,rnd=0,cap=F) {
+  if(is.character(x)) return(x)
   x<-round(x,rnd)
   r<-rep(NA_character_,length(x))
   for(i in 1:length(x)){

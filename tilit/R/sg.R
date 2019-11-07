@@ -10,13 +10,14 @@
 #' @param old.col.align
 #' @param new.col.align
 #' @param dig
+#' @param tabularx given preamble use new.col.align X for left Y for right Z for center
 #'
 #' @return
 #' @export
 #' @import data.table
 #' @importFrom magrittr %>%
 #' @examples
-sg <- function(x,tit,dig=4,type,lab,sum=F,old.col.align=paste0(rep('c',ncol(x)),collapse=''),new.col.align=paste0(c('l',rep('r',ncol(x)-1)),collapse=''),rplc=c(old='^X\\. ',new=''),...) {
+sg <- function(x,tit,dig=4,type,lab,sum=F,old.col.align=paste0(rep('c',ncol(x)),collapse=''),new.col.align=paste0(c('l',rep('r',ncol(x)-1)),collapse=''),rplc=c(old='^X\\. ',new=''),tabularx=F,...) {
   if(!is.data.table(x)) x<-data.table(x)
   n<-names(x)[sapply(x,function(y) (!is.integer(y))&&is.numeric(y))]
   if(length(n)) x[,(n):=lapply(.SD,round,dig),.SDcols=n]
@@ -46,6 +47,8 @@ sg <- function(x,tit,dig=4,type,lab,sum=F,old.col.align=paste0(rep('c',ncol(x)),
       sub(pattern=old.col.align,replacement=new.col.align) %>%
       gsub('textbackslash ','',.) %>%
       gsub(rplc[1],rplc[2],.)
+    if(tabularx) x<-gsub('\\{tabular\\}','\\{tabularx\\}',x) %>% gsub('begin\\{tabularx\\}','begin\\{tabularx\\}\\{\\\\textwidth\\}',.)
+    x
   }
   structure(x,format=type,class="knitr_kable")
 }
