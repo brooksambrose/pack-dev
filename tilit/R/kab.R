@@ -4,7 +4,7 @@
 #'
 #' @return
 #' @export
-#' @import knitr kableExtra
+# @import knitr kableExtra
 #' @importFrom magrittr %>%
 #'
 #' @examples

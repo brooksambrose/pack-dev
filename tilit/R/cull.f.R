@@ -21,6 +21,6 @@ cull.f<-function(
 		b<-sub("\\[ANONYMOUS\\],? ?","",b)
 	}
 	b<-b[nchar(b)>13]
-	if(!is.null(cull)) b<-b[stringdist(a=a,b=b,method="jw",p=.1)<cull]
+	if(!is.null(cull)) b<-b[stringdist::stringdist(a=a,b=b,method="jw",p=.1)<cull]
 	b
 }

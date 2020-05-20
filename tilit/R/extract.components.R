@@ -3,6 +3,8 @@
 #' @param graph
 #' @param quantile
 #'
+#' @import sna network
+#'
 #' @return
 #' @export
 #'
@@ -12,7 +14,7 @@ extract.components<-function(
 	,quantile=0
 )
 {
-	components<-component.dist(graph)
+	components<-sna::component.dist(graph)
 	subgraphs<-list()
 	j<-1
 	for(i in order(components$csize[which(components$csize>=quantile(components$csize, c(quantile)))],decreasing=T)){

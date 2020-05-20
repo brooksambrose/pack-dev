@@ -1,22 +1,19 @@
-#' Title
+#' Convert igraph graph to network network
 #'
 #' @param net
 #'
 #' @return
 #' @export
 #'
+# @import igraph network data.table
 #' @examples
 igraph2statnet<-function(
 	net
 )
 {
-	require(igraph)
-	require(network)
-	require(data.table)
-
 	if(class(net)=='igraph'){
-		el<-data.table(get.edgelist(net))
-		dir<-!igraph::is.directed(net)
+		el<-data.table::data.table(igraph::as_edgelist(net))
+		dir<-!igraph::is_directed(net)
 		if(dir){
 			w<-el[,V1>V2]
 			r<-el[w,V1]
