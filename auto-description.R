@@ -90,7 +90,7 @@ u['(0)',on='p',.(u,f,p)]
 r<-rbindlist(list(
 	r,
 	data.table(
-		p=tilit::ec('stringdist,tilit,sna,pdftools,stringr,igraph,network,knitr,ggplot2,ecp,plotly,htmltools,stargazer,kableExtra,plagiat')
+		p=tilit::ec('stringdist,tilit,sna,pdftools,stringr,igraph,network,knitr,ggplot2,ecp,plotly,htmltools,stargazer,kableExtra')
 	)[,ix:=.I][,r:=require(p,character.only=T),by=ix][,!'ix']
 ))
 
