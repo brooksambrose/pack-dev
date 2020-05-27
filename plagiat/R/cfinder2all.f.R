@@ -1,7 +1,9 @@
-#' Title
+#' Deprecated Clique Percolation
 #'
 #' @param cf.in
 #' @param which
+#'
+#' @import data.table doParallel
 #'
 #' @return
 #' @export
@@ -20,7 +22,6 @@ cfinder2all.f<-function(
 	)
 )
 {
-  library(data.table)
 	fileps<-list.files(cf.in,recursive=T,full.names=T)
 	ret<-list()
 	for(i in which){
@@ -36,7 +37,6 @@ cfinder2all.f<-function(
 				raw
 			}
 
-			library(doParallel)
 			cl <- makeCluster(detectCores() )
 			registerDoParallel(cl, cores = detectCores() )
 
@@ -62,7 +62,6 @@ cfinder2all.f<-function(
 				raw
 			}
 
-			library(doParallel)
 			cl <- makeCluster(detectCores() )
 			registerDoParallel(cl, cores = detectCores() )
 

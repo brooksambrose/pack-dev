@@ -5,6 +5,7 @@
 #' @param verbose
 #' @param maxV
 #' @param lev
+#' @import stm
 #'
 #' @return
 #' @export

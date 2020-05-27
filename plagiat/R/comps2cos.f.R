@@ -5,6 +5,8 @@
 #' @param threads
 #' @param window.buffer
 #'
+#' @import parallel
+#'
 #' @return
 #' @export
 #'

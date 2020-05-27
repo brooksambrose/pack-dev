@@ -14,6 +14,7 @@
 #' @return
 #' @export
 #' @import data.table magrittr
+#' @importFrom Rtsne Rtsne
 #'
 #' @examples
 brpca2tsne.f<-function(Q,brpca,D=50,lev=c('doc','par','sen')[1],tD=c(4:2),plx=c(10,30,50),thta=0.5,mit=1000,skip.pca=F,nc=1){

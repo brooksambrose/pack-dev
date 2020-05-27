@@ -3,15 +3,13 @@
 #' @param wok2dbl
 #' @param reps
 #' @param drop.miss.vars
+#' @import data.table igraph
 #'
 #' @return
 #' @export
 #'
 #' @examples
 dbl2inspect.f<-function(wok2dbl,reps=100,drop.miss.vars=F){
-	library(reshape2)
-	library(data.table)
-	library(igraph)
 	setkey(wok2dbl,field)
 	pw<-combn(unique(wok2dbl[,field]),m=2,simplify = FALSE)
 	el<-list()
