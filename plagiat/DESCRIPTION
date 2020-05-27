@@ -27,7 +27,6 @@ Imports:
     tilit (>= 0.0.0.9000),
     tm (>= 0.7.7),
     stm (>= 1.3.3.9005),
-    ngramr (>= 1.4.5),
     ggplot2 (>= 3.3.0),
     pbapply (>= 1.4.2),
     rsvd (>= 1.0.3),
@@ -65,7 +64,10 @@ Imports:
     readxl (>= 1.3.1),
     zoo (>= 1.8.8),
     httr (>= 1.4.1),
-    RGoogleDrive (>= 1.0),
     dendextend (>= 1.13.4),
     networkD3 (>= 0.4),
     forecast (>= 8.12)
+Suggests: 
+    ngramr (>= 1.4.5),
+    RGoogleDrive (>= 1.0),
+    cldr (>= 1.0.0)
