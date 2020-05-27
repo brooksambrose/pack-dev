@@ -126,7 +126,7 @@ t<-u[!'(0)',on='p'
 		 	 	sub('xml','xml2',.) %>%
 		 	 	sub('networkD','networkD3',.) %>%
 		 	 	{base::Filter(f=function(x) !x%in%'cld',x=.)})][
-		 	 		,.(t=try(is.null(usethis::use_package(p,min_version = T)))),by=p]
+		 	 		,.(t=try(is.null(usethis::use_package(p,min_version = F)))),by=p]
 # manual fixes
 # xml
 
