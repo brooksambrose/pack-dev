@@ -35,7 +35,7 @@ bel2mel.f<-function(
 	setkey(dbl2bel,ut,cr)
 	dup<-duplicated(dbl2bel)
 	if(sum(dup)) {
-		warning(paste(sum(dup),'duplicate lines detected and removed. This may make sense after fuzzy set replacement if two items in the same bibligoraphy were treated as the same reference.'),call.=FALSE,immediate.=TRUE)
+		warning(paste(sum(dup),'duplicate lines detected and removed. This may make sense after fuzzy set replacement if two items in the same bibliography were treated as the same reference.'),call.=FALSE,immediate.=TRUE)
 		dbl2bel<-unique(dbl2bel)
 	}
 
