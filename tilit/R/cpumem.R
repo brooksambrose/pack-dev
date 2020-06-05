@@ -9,7 +9,7 @@
 #' @import data.table lubridate cowplot ggplot2
 #'
 #' @examples
-cpumem<-function(binUnit='Gb',winmins=30,kill=F){
+cpumem<-function(binUnit='Gb',winmins=30,kill=F,plot=F){
   if(kill) {system('pkill cpumemlog');return()}
   binPower<-switch(binUnit,GB=30,gb=30,gB=30,Gb=30,MB=20,Gb=20,mB=20,Mb=30)
 
@@ -21,7 +21,7 @@ cpumem<-function(binUnit='Gb',winmins=30,kill=F){
   memlim<-Sys.getenv('MEM_LIMIT') %>% as.numeric %>% {./2^binPower}
 
   cm<-fread('cpumemlog_1.txt',fill=T)[
-    ,.(pcu=sum(PCPU),gbm=sum(RSS)/2^(binPower-20)),by=.(DATE,TIME,PID,COMMAND)][
+    ,.(pcu=sum(PCPU),gbm=sum(RSS)/2^(binPower-10)),by=.(DATE,TIME,PID,COMMAND)][
       ,t:=ymd_hms(paste(DATE,TIME))+hours(5)][,rt:=floor_date(t,unit='10 mins') %>% factor][
         ,PID:=sprintf('%s (%s)',COMMAND,PID)] %>% setkey(PID) %>% na.omit
   k<-cm[,.(gbM=max(gbm),t=max(t),pcU=max(pcu)),keyby=PID] %>% setorder(-gbM)
@@ -55,4 +55,5 @@ cpumem<-function(binUnit='Gb',winmins=30,kill=F){
 
   }
   72 %>% {ggsave('cpumem.png',p,dpi=.,units = 'in',width = 1400/.,height=900/.)}
+  if(plot) p
 }
