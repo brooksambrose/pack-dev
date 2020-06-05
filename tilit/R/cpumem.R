@@ -3,6 +3,7 @@
 #' @param binUnit
 #' @param winmins
 #' @param kill
+#' @param plot
 #'
 #' @return
 #' @export
