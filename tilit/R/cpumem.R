@@ -15,7 +15,12 @@ cpumem<-function(binUnit='Gb',winmins=30,kill=F,plot=F){
   binPower<-switch(binUnit,GB=30,gb=30,gB=30,Gb=30,MB=20,Gb=20,mB=20,Mb=30)
 
   {system(sprintf(
-    'if ! pgrep cpumemlog ; then "%s" 1 & sleep 5 ; fi'
+'function pgrep_live {
+  pids=$(pgrep \"$1\");
+  [ \"$pids\" ] || return;
+  ps -o s= -o pid= $pids | sed -n \'s/^[^ZT][[:space:]]\\+//p\';
+}
+if ! pgrep_live cpumemlog ; then "%s" 1 & sleep 5 ; fi'
     ,system.file('cpumemlog',package='tilit', mustWork = T)),wait = F)}
 
   cpulim<-Sys.getenv('CPU_LIMIT') %>% as.numeric %>%  `*`(100)
