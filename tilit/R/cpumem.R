@@ -20,6 +20,7 @@ cpumem<-function(binUnit='Gb',winmins=30,kill=F,plot=F,int=10){
   cpulim<-Sys.getenv('CPU_LIMIT') %>% as.numeric %>%  `*`(100)
   memlim<-Sys.getenv('MEM_LIMIT') %>% as.numeric %>% {./2^binPower}
 
+  if(!file.exists('cpumemlog_1.txt')) Sys.sleep(5)
   cm<-fread('cpumemlog_1.txt',fill=T)[
     ,.(pcu=sum(PCPU),gbm=sum(RSS)/2^(binPower-10)),by=.(DATE,TIME,PID,COMMAND)][
       ,t:=ymd_hms(paste(DATE,TIME))+hours(5)][,rt:=floor_date(t,unit='10 mins') %>% factor][
