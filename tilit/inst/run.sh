@@ -5,4 +5,4 @@ function pgrep_live {
   ps -o s= -o pid= "$pids" | sed -n 's/^[^ZT][[:space:]]\+//p';
 }
 
-pgrep_live cpumemlog | if [ ! $? ] ; then "/Library/Frameworks/R.framework/Versions/3.6/Resources/library/tilit/cpumemlog" 1 & sleep 5 ; fi
+pgrep_live cpumemlog | if [ ! $? ] ; then $(Rscript -e 'cat(system.file("cpumemlog",package="tilit",mustWork=T))') 1 & sleep 5 ; fi
