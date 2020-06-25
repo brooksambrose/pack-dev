@@ -5,13 +5,15 @@
 #' @param kill
 #' @param plot
 #' @param int measurement interval in seconds, defaults top 10 seconds
+#' @param ann a list of lists, where each element is arguments to ggplot2::annotate
+#' @param fontsize size of text in cpumem.png
 #'
 #' @return
 #' @export
 #' @import data.table lubridate cowplot ggplot2
 #'
 #' @examples
-cpumem<-function(binUnit='Gb',winmins=30,kill=F,plot=F,int=10){
+cpumem<-function(binUnit='Gb',winmins=30,kill=F,plot=F,int=10,fontsize=12,ann){
   if(kill) {system('pkill cpumemlog');return()}
   binPower<-switch(binUnit,GB=30,gb=30,gB=30,Gb=30,MB=20,Gb=20,mB=20,Mb=30)
 
@@ -32,9 +34,11 @@ cpumem<-function(binUnit='Gb',winmins=30,kill=F,plot=F,int=10){
     p<-cm[k[t>=tthr][c(order(gbM,decreasing=T)[1:5],order(pcU,decreasing=T)[1:5]) %>% unique %>% head(10),PID]][
       t>=tthr
       ,
-      {ggplot(data=.SD,aes(x=t,color=PID)) + xlab(NULL)} %>% {list(
-        {. + geom_line(aes(y=gbm),size=1,alpha=.75) + theme(legend.position = 'none',axis.text.x = element_blank(),axis.ticks.x = element_blank())} %>% {if(is.na(memlim)) {.} else {. + geom_hline(yintercept=memlim,linetype='dashed')}}
-        ,{. + geom_line(aes(y=pcu),size=1,alpha=.75) + theme(legend.position = 'bottom')} %>% {if(is.na(cpulim)) {.} else {. + geom_hline(yintercept=cpulim,linetype='dashed')}}
+      {ggplot(data=.SD,aes(x=t,color=PID)) + xlab(NULL)} %>%
+        {if(!missing(ann)) for(i in ann) .<-.+do.call(annotate,i);.} %>%
+        {list(
+        {. + geom_line(aes(y=gbm),size=1,alpha=.75) + theme(legend.position = 'none',axis.text.x = element_blank(),axis.ticks.x = element_blank()) + expand_limits(x=0,y=0)} %>% {if(is.na(memlim)) {.} else {. + geom_hline(yintercept=memlim,linetype='dashed')}}
+        ,{. + geom_line(aes(y=pcu),size=1,alpha=.75) + theme(legend.position = 'bottom') + expand_limits(x=0,y=0)} %>% {if(is.na(cpulim)) {.} else {. + geom_hline(yintercept=cpulim,linetype='dashed')}}
         # . + geom_area(aes(y=gbm),size=1,alpha=.5,color=NA,linetype='solid',orientation = 'x',position = 'stack') + theme(legend.position = 'none',axis.text.x = element_blank(),axis.ticks.x = element_blank()) + ylim(0,1)
         # ,. + geom_area(aes(y=pcu),size=1,alpha=.5,color=NA,linetype='solid',orientation = 'x',position = 'stack') + theme(legend.position = 'bottom') + ylim(0,100)
       )} %>% {
@@ -55,6 +59,6 @@ cpumem<-function(binUnit='Gb',winmins=30,kill=F,plot=F,int=10){
 
 
   }
-  72 %>% {ggsave('cpumem.png',p,dpi=.,units = 'in',width = 1400/.,height=900/.)}
+  72 %>% {ggsave('cpumem.png',p+theme(text=element_text(size=fontsize)),dpi=.,units = 'in',width = 1400/.,height=900/.)}
   if(plot) p
 }
