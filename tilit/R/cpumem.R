@@ -13,7 +13,7 @@
 #' @import data.table lubridate cowplot ggplot2
 #'
 #' @examples
-cpumem<-function(binUnit='Gb',winmins=30,kill=F,plot=F,int=10,fontsize=12,ann){
+cpumem<-function(binUnit='Gb',winmins=30,kill=F,plot=F,int=10,fontsize=12,ann=list()){
   if(kill) {system('pkill cpumemlog');return()}
   binPower<-switch(binUnit,GB=30,gb=30,gB=30,Gb=30,MB=20,Gb=20,mB=20,Mb=30)
 
@@ -35,7 +35,7 @@ cpumem<-function(binUnit='Gb',winmins=30,kill=F,plot=F,int=10,fontsize=12,ann){
       t>=tthr
       ,
       {ggplot(data=.SD,aes(x=t,color=PID)) + xlab(NULL)} %>%
-        {if(!missing(ann)) for(i in ann) .<-.+do.call(annotate,i);.} %>%
+        {if(length(ann)) for(i in ann) .<-.+do.call(annotate,i);.} %>%
         {list(
         {. + geom_line(aes(y=gbm),size=1,alpha=.75) + theme(legend.position = 'none',axis.text.x = element_blank(),axis.ticks.x = element_blank()) + expand_limits(x=0,y=0)} %>% {if(is.na(memlim)) {.} else {. + geom_hline(yintercept=memlim,linetype='dashed')}}
         ,{. + geom_line(aes(y=pcu),size=1,alpha=.75) + theme(legend.position = 'bottom') + expand_limits(x=0,y=0)} %>% {if(is.na(cpulim)) {.} else {. + geom_hline(yintercept=cpulim,linetype='dashed')}}
