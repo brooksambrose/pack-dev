@@ -1,20 +1,28 @@
-#' Ordered Vector 2 Changepoints
+#' Ordered Vector 2 Changepoints (now accepting matrix)
 #'
 #' @param x
 #' @param drv
 #' @param min.period
 #' @param warn
+#' @param inc.ov
+#' @param drv.only
+#' @param ... other args to ecp::e.divisive
 #'
 #' @return
 #' @export
 #' @import data.table
 #' @examples
-ov2chpt.f<-function(x,drv=1,min.period=2,inc.ov=F,warn=T){
-  if(length(x)>1000) stop('Computing long vectors is inefficient, warn=T to disable warning.')
+ov2chpt.f<-function(x,drv=1,min.period=2,inc.ov=F,warn=T,drv.only=F,...){
+  d<-length(dim(x))
+  if(!is.null(d)) if(d>2) stop('\ndim(x) > 2')
+  m<-'\nComputing long vectors is inefficient, warn=F to disable warning.'
+  x<-data.table(x) %>% {.[,.SD,.SDcols=sapply(.,is.numeric)]}
+  if(warn) if(is.null(d)) {if(length(x)>1000) stop(m)} else {if(nrow(x)>1000) stop(m)}
   dif<-function(y){for(i in 1:drv) y<-diff(y);y}
-  r<-data.table(x,d=c(rep(NA,drv),dif(x)))
-  if(inc.ov) j<-1:2 else j<-2
-  r[,g:=c(rep(1,drv-1),{k<-ecp::e.divisive(cbind(x,d)[-(1:drv),j] %>% cbind,min.size = min.period)$cluster;c(k,max(k))}) %>% factor]
+  r<-data.table(x,apply(x,2,function(z) c(rep(NA,drv),dif(z))))
+  setnames(r,c(names(x),paste0(names(x),'_d',drv)))
+  if(inc.ov) j<-1:ncol(r) else j<-2:ncol(r)
+  if(!drv.only) r[,g:=factor(c(rep(1,drv-1),{k<-ecp::e.divisive(as.matrix(r[-(1:drv),.SD,.SDcols=j]),min.size = min.period,...)$cluster;c(k,max(k))}))]
   r
 }
 # TODO add this to SO answer at ?

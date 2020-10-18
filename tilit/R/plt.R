@@ -4,12 +4,14 @@
 #' @param output
 #' @param hovinf One of 'x+y','all','text','none','skip'. Defaults to 'x+y'.
 #' @param ... Arguments to plotly::ggplotly
+#' @param mbar
 #'
 #' @return
 #' @export
 #'
 #' @examples
-plt<-function(ggplot,output,hovinf='x+y',...) {
+plt<-function(ggplot,output,hovinf='x+y',mbar=T,...) {
+  #,buttons=
   if(missing(output)) output<-if(knitr::is_latex_output()) 'latex' else 'html'
   if(output=='latex') return(ggplot) else {
     p<-plotly::ggplotly(ggplot,...) %>% plotly::style(hoverinfo=hovinf[1])

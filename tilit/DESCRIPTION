@@ -25,7 +25,9 @@ Imports:
     stargazer (>= 5.2.2),
     kableExtra (>= 1.1.0),
     lubridate,
-    cowplot
+    cowplot,
+    gplots,
+    gtools
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true

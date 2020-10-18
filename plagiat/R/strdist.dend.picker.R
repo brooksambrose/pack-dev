@@ -9,6 +9,7 @@
 #' @param out
 #' @param instruct
 #'
+#' @import data.table dendextend
 #' @return
 #' @export
 #'

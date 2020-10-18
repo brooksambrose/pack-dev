@@ -3,7 +3,7 @@
 #' @param wok2dbl
 #' @param out
 #' @param check.for.saved.output
-#' @param saved_recode
+#' @param saved_recode NULL to ignore, or list of character vectors each representing a single CR variation set
 #' @param save_og4recode
 #' @param trim_doi
 #' @param capitalize
@@ -14,7 +14,7 @@
 #'
 #' @return
 #' @export
-#' @import data.table
+#' @import data.table magrittr
 #'
 #' @examples
 dbl2bel.f<-function(
@@ -47,16 +47,22 @@ dbl2bel.f<-function(
 
 	### impose formatting and nomenclature ###
 	setnames(dbl2bel,c("ut","cr"))
-	if(trim_doi) dbl2bel[,cr:=sub(", DOI .+","",cr)] #remove DOI
-	if(capitalize) dbl2bel[,cr:=gsub("(\\w)","\\U\\1",cr,perl=T)] #capitalize
-	if(trim_anon&capitalize) dbl2bel[,cr:=sub("^\\[ANONYMOUS\\], ","",cr)] #remove ANONYMOUS author
+	ogcr<-data.table(og=dbl2bel[,factor(cr) %>% levels])
+	ogcr[,t:=og]
+	doif<-function(x) sub(", DOI .+","",x) #remove DOI
+	capf<-function(x) gsub("(^|[[:space:]])([[:alpha:]])", "\\1\\U\\2",x,perl=T) #capitalize https://stackoverflow.com/a/6365349/1639069
+	anof<-function(x) sub("^\\[ANONYMOUS\\], ","",x,ignore.case = T)  # remove ANONYMOUS author
+	if(trim_doi) {dbl2bel[,cr:=doif(cr)];ogcr[,t:=t %<>% doif]}
+	if(capitalize) {dbl2bel[,cr:=capf(cr)];ogcr[,t:=t %<>% capf]}
+	if(trim_anon) {dbl2bel[,cr:=anof(cr)];ogcr[,t:=t %<>% anof]}
+	save(ogcr,file = paste(out,'dbl2bel-ogcr.RData',sep=.Platform$file.sep) %>% normalizePath)
 
 	### recoding ###
 	setkey(dbl2bel,cr)
 	if(save_og4recode) {
 		# save original codes to disk
 		cat('\nSaving normalized original CR codes to pass to fuzzy set routine.')
-		original.cr<-unique(dob2bel$cr)
+		original.cr<-unique(dbl2bel$cr)
 		save(original.cr,file=paste(out,.Platform$file.sep,'original-cr.RData',sep=""))
 	}
 	if(!is.null(saved_recode)) {
