@@ -4,6 +4,7 @@
 #' @param cosparallel.path A path to cosparallel executable (e.g. ~/cosparallel-code/cos). Default assumes cos executable is in path.
 #' @param threads
 #' @param window.buffer
+#' @param use_mxc
 #'
 #' @import parallel
 #'
@@ -16,27 +17,36 @@
 #'    window.buffer=system('free -b | awk \'NR==2 {print $3" "$6}\'',intern = T) %>% strsplit(' ') %>% unlist %>% as.numeric %>% diff %>% log2
 #' }
 comps2cos.f<-function(
-	mel2comps.dir=stop('Specify directory where mel2comps.txt edgelists are located.')
-	,cosparallel.path='cos'
-	,threads=parallel::detectCores()-1
-	,window.buffer=system('free -b | awk \'NR==2 {print $6}\'',intern = T) %>% as.numeric %>% log2
+  mel2comps.dir=stop('Specify directory where mel2comps.txt edgelists are located.')
+  ,cosparallel.path='cos'
+  ,threads=parallel::detectCores()-1
+  ,window.buffer=system('free -b | awk \'NR==2 {print $6}\'',intern = T) %>% as.numeric %>% log2
+  ,use_mxc=F
 )
 {
-	mel2comps.dir
-	cosparallel.path
+  mel2comps.dir
+  cosparallel.path
 
-	mel2comps<-list.files(mel2comps.dir,pattern='mel2comps\\.txt$',recursive=T,full.names=T)
+  mel2comps<-list.files(mel2comps.dir,pattern='mel2comps\\.txt$',recursive=T,full.names=T)
 
-	for(i in mel2comps){
-		com<-paste(
-			'cd \'',sub('mel2comps.txt','\'',i)
-			,' && ',sub('cos$','maximal_cliques',cosparallel.path),' mel2comps.txt'
-			,' && ',cosparallel.path,' -P ',threads,' mel2comps.txt.mcliques'
-			,sep='')
-		cat('Source data: ',i,'\n\nThreads used: ',threads,'\n\nsh: ',com,'\n\ncos stdout:\n\n',sep='')
-		system(
-			command=com
-			#		,stdout='stdout.txt'
-		)
-	}
+  for(i in mel2comps){
+    if(!use_mxc) {
+      el<-fread(i) %>% as.matrix
+      el %>% head %>% t %>% as.vector %>% unique %>% factor %>% {data.table(.,as.integer(.) %>% `-`(1))} %>% fwrite(file = paste0(i,'.map'),sep=' ',col.names = F)
+      g<-igraph::graph_from_edgelist(el,directed = F)
+      mxc<-igraph::max_cliques(g)
+      sapply(mxc,function(y) c(y %>% as.character,-1) %>% paste(collapse=' ')) %>% writeLines(con=paste0(i,'.mcliques'))
+    }
+
+    com<-paste(
+      'cd \'',sub('mel2comps.txt','\'',i)
+      ,ifelse(use_mxc,paste0(" && ", sub("cos$", "maximal_cliques", cosparallel.path), " mel2comps.txt"),'')
+      ,' && ',cosparallel.path,' -P ',threads,' mel2comps.txt.mcliques'
+      ,sep='')
+    cat('Source data: ',i,'\n\nThreads used: ',threads,'\n\nsh: ',com,'\n\ncos stdout:\n\n',sep='')
+    system(
+      command=com
+      #		,stdout='stdout.txt'
+    )
+  }
 }
