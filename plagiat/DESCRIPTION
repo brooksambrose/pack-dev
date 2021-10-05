@@ -43,11 +43,9 @@ Imports:
     grDevices,
     ggnetwork,
     intergraph,
-    latentnet,
     RColorBrewer,
     withr,
     pdftools,
-    tesseract,
     ineq,
     plotrix,
     sp,
@@ -69,5 +67,7 @@ Imports:
     forecast
 Suggests: 
     ngramr,
+    tesseract,
     RGoogleDrive,
+    latentnet,
     cldr
