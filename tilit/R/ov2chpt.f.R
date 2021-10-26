@@ -21,7 +21,7 @@ ov2chpt.f<-function(x,drv=1,min.period=2,inc.ov=F,warn=T,drv.only=F,...){
   dif<-function(y) {
     lapply(drv,function(i) {
       for(j in 1:i) y<-diff(y)
-      y<-data.table(c(rep(NA,i),y)) %>% setnames(paste0(names(x),'_d',i))
+      y<-data.table(c(rep(NA,i),y)) %>% setnames(paste0(names(x)[i],'_d',i))
       y
     }
     ) %>% do.call(data.table,.)}
