@@ -3,6 +3,8 @@
 export(.ls.objects)
 export(adup)
 export(allargs)
+export(asinh_breaks)
+export(asinh_trans)
 export(combn)
 export(cpumem)
 export(cull.f)

@@ -23,9 +23,9 @@ igraph2statnet<-function(
 		setkey(el,V1,V2)
 		bf<-nrow(el)
 		el<-unique(el)
-		cat('\n',bf-nrow(el),'duplicate edges deleted\n')
+		if(bf-nrow(el)) cat('\n',bf-nrow(el),'duplicate edges deleted\n')
 		el<-as.matrix(el)
-		net<-network::network(el,matrix.type="edgelist",directed=ifelse(dir,T,F))
+		net<-network::network(el,matrix.type="edgelist",directed=ifelse(!dir,T,F))
 	}
 
 	if(class(net)=='network'){

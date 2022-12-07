@@ -8,5 +8,5 @@
 #'
 #' @examples
 ltr2scr<-function(ltr,...) {
-  tilit::ltrgrd(...)[ltr,on='let',mid]
+  tilit::ltrgrd(...)[.(ltr),on='let',mid]
 }
