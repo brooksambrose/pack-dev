@@ -1,6 +1,6 @@
 #' Bimodal edgelist to monomodal edgelist
 #'
-#' Recieves a dbl2bel and outputs one or both of two mode projections in edgelist format. May be redundant with igraph::bipartite.projection.
+#' Receives a dbl2bel and outputs one or both of two mode projections in edgelist format. May be redundant with igraph::bipartite.projection.
 #'
 #' @param dbl2bel
 #' @param subset
